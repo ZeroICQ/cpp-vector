@@ -1,29 +1,55 @@
 #pragma once
 
-#include <type_traits>
 #include <memory>
 
-//template <class T, class Allocator = allocator<T> >
+//Alexey template library
+namespace atl {
+
+//template <class T, class Allocator = allocator<T> > class vector;
+//
+//template <class T, class Allocator>
+//bool operator==(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//template <class T, class Allocator>
+//bool operator< (const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//template <class T, class Allocator>
+//bool operator!=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//template <class T, class Allocator>
+//bool operator> (const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//template <class T, class Allocator>
+//bool operator>=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//template <class T, class Allocator>
+//bool operator<=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//
+//template <class T, class Allocator>
+//void swap(vector<T,Allocator>& x, vector<T,Allocator>& y);
+//
+//template <class Allocator> class vector<bool,Allocator>;
+//
+//// hash support
+//template <class T> struct hash;
+//template <class Allocator> struct hash<vector<bool, Allocator> >;
+
+
 template <class T, class Allocator = std::allocator<T> >
 class vector {
 public:
-////    // types:
-////    typedef value_type&                                         reference;
-////    typedef const value_type&                                   const_reference;
-////    typedef /*implementation-defined*/                          iterator;
-////    typedef /*implementation-defined*/                          const_iterator;
-////    typedef /*implementation-defined*/                          size_type;
-////    typedef /*implementation-defined*/                          difference_type;
-////    typedef T                                                   value_type;
-////    typedef Allocator                                           allocator_type;
-////    typedef typename allocator_traits<Allocator>::pointer       pointer;
-////    typedef typename allocator_traits<Allocator>::const_pointer const_pointer;
-////    typedef std::reverse_iterator<iterator>                     reverse_iterator;
-////    typedef std::reverse_iterator<const_iterator>               const_reverse_iterator;
+//    // types:
+//    typedef value_type&                                         reference;
+//    typedef const value_type&                                   const_reference;
+//    typedef /*implementation-defined*/                          iterator;
+//    typedef /*implementation-defined*/                          const_iterator;
+    typedef ulong                                                 size_type;
+//    typedef /*implementation-defined*/                          difference_type;
+//    typedef T                                                   value_type;
+//    typedef Allocator                                           allocator_type;
+//    typedef typename allocator_traits<Allocator>::pointer       pointer;
+//    typedef typename allocator_traits<Allocator>::const_pointer const_pointer;
+//    typedef std::reverse_iterator<iterator>                     reverse_iterator;
+//    typedef std::reverse_iterator<const_iterator>               const_reverse_iterator;
 //
-//    // construct/copy/destroy:
+    // construct/copy/destroy:
 //    explicit vector(const Allocator& = Allocator());
-//    explicit vector(size_type n);
+    explicit vector(size_type n);
 //    vector(size_type n, const T& value,const Allocator& = Allocator());
 //    template <class InputIterator>
 //    vector(InputIterator first, InputIterator last,const Allocator& = Allocator());
@@ -103,3 +129,5 @@ public:
 //    void     swap(vector<T,Allocator>&);
 //    void     clear() noexcept;
 };
+
+} //namespace atl
