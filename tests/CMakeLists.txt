@@ -11,5 +11,7 @@ add_executable(vector_tests ${TEST_SRC})
 
 target_link_libraries(vector_tests vector)
 
-target_compile_options(vector_tests PRIVATE -g3 -O0 -coverage)
-set_target_properties(vector_tests  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(vector_tests PRIVATE -g3 -O0 -coverage)
+    set_target_properties(vector_tests  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")
+endif()
