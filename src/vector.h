@@ -30,23 +30,26 @@ namespace atl {
 //template <class Allocator> struct hash<vector<bool, Allocator> >;
 
 
-template <class T, class Allocator = std::allocator<T> >
+template <class T, class Allocator = std::allocator<T>>
 class vector {
 public:
-//    // types:
-//    typedef value_type&                                         reference;
-//    typedef const value_type&                                   const_reference;
+    // types:
+    using value_type                                             =  T;
+    using reference                                              = value_type&;
+    using const_reference                                        = const value_type&;
+    using size_type                                              = std::size_t;
+    using difference_type                                        = std::ptrdiff_t ;
+
+    using allocator_type                                         = Allocator;
+    using pointer                                                = typename std::allocator_traits<Allocator>::pointer;
+    using const_pointer                                          = typename std::allocator_traits<Allocator>::const_pointer;
+
 //    typedef /*implementation-defined*/                          iterator;
 //    typedef /*implementation-defined*/                          const_iterator;
-    typedef ulong                                                 size_type;
-//    typedef /*implementation-defined*/                          difference_type;
-//    typedef T                                                   value_type;
-//    typedef Allocator                                           allocator_type;
-//    typedef typename allocator_traits<Allocator>::pointer       pointer;
-//    typedef typename allocator_traits<Allocator>::const_pointer const_pointer;
 //    typedef std::reverse_iterator<iterator>                     reverse_iterator;
 //    typedef std::reverse_iterator<const_iterator>               const_reverse_iterator;
-//
+
+
     // construct/copy/destroy:
 //    explicit vector(const Allocator& = Allocator());
     explicit vector(size_type n);
