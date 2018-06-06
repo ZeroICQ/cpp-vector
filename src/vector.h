@@ -34,15 +34,15 @@ template <class T, class Allocator = std::allocator<T>>
 class vector {
 public:
     // types:
-    using value_type                                             =  T;
-    using reference                                              = value_type&;
-    using const_reference                                        = const value_type&;
-    using size_type                                              = std::size_t;
-    using difference_type                                        = std::ptrdiff_t ;
+    using value_type                                   =  T;
+    using reference                                    = value_type&;
+    using const_reference                              = const value_type&;
+    using size_type                                    = std::size_t;
+    using difference_type                              = std::ptrdiff_t ;
 
-    using allocator_type                                         = Allocator;
-    using pointer                                                = typename std::allocator_traits<Allocator>::pointer;
-    using const_pointer                                          = typename std::allocator_traits<Allocator>::const_pointer;
+    using allocator_type                               = Allocator;
+    using pointer                                      = typename std::allocator_traits<Allocator>::pointer;
+    using const_pointer                                = typename std::allocator_traits<Allocator>::const_pointer;
 
 //    typedef /*implementation-defined*/                          iterator;
 //    typedef /*implementation-defined*/                          const_iterator;
@@ -51,7 +51,8 @@ public:
 
 
     // construct/copy/destroy:
-//    explicit vector(const Allocator& = Allocator());
+    //ASK: на стеке, rvalue?
+    explicit vector(const Allocator& alloc = Allocator());
     explicit vector(size_type n);
 //    vector(size_type n, const T& value,const Allocator& = Allocator());
 //    template <class InputIterator>
@@ -62,7 +63,7 @@ public:
 //    vector(vector&&, const Allocator&);
 //    vector(initializer_list<T>, const Allocator& = Allocator());
 //
-//    ~vector();
+    ~vector();
 //    vector<T,Allocator>& operator=(const vector<T,Allocator>& x);
 //    vector<T,Allocator>& operator=(vector<T,Allocator>&& x);
 //    vector& operator=(initializer_list<T>);
@@ -108,9 +109,9 @@ public:
 //    reference       back();
 //    const_reference back() const;
 //
-//    //data access
-//    T*       data() noexcept;
-//    const T* data() const noexcept;
+//    //data_ access
+//    T*       data_() noexcept;
+//    const T* data_() const noexcept;
 //
 //    // modifiers:
 //    template <class... Args> void emplace_back(Args&&... args);
@@ -131,6 +132,27 @@ public:
 //    iterator erase(const_iterator first, const_iterator last);
 //    void     swap(vector<T,Allocator>&);
 //    void     clear() noexcept;
+private:
+    Allocator allocator_;
+    pointer data_;
+    size_type capacity_;
+    size_type size_;
+
 };
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(const Allocator& alloc): allocator_(alloc) {}
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(vector::size_type n) : vector<T, Allocator>()
+{
+    data_ = std::allocator_traits<Allocator>::allocate(allocator_, n);
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>::~vector()
+{
+    //TODO: clear
+}
 
 } //namespace atl

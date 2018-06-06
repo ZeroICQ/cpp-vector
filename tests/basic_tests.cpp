@@ -1,7 +1,12 @@
 #include "catch.hpp"
+#include "vector.h"
 
-TEST_CASE("Test test", "[tag]")
+
+TEST_CASE("Vector create", "[create]")
 {
-    CHECK(false);
-    REQUIRE(true);
+    SECTION("size constructor")
+    {
+        atl::vector<double> test_vector(500);
+        int a;
+    }
 }
