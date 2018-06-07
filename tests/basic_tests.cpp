@@ -93,5 +93,8 @@ TEST_CASE("Pushback", "[access][modify]")
         {
             REQUIRE(test_vector[i] == i-2);
         }
+
+        test_vector.resize(500, 9);
+
     }
 }

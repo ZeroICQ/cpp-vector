@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <math.h>
+#include <utility>
 
 //Alexey template library
 namespace atl {
@@ -92,7 +93,7 @@ public:
     size_type size() const noexcept;
     size_type max_size() const noexcept;
     void      resize(size_type sz);
-//    void      resize(size_type sz, const T& c);
+    void      resize(size_type sz, const T& elem);
     size_type capacity() const noexcept;
     bool      empty() const noexcept;
     void      reserve(size_type cp);
@@ -115,8 +116,8 @@ public:
     // modifiers:
 //    template <class... Args> void emplace_back(Args&&... args);
     void push_back(const T& elem);
-//    void push_back(T&& x);
-//    void pop_back();
+    void push_back(T&& elem);
+    void pop_back();
 //
 //    template <class... Args> iterator emplace(const_iterator position, Args&&... args);
 //    iterator insert(const_iterator position, const T& x);
@@ -142,6 +143,8 @@ private:
 
     void initialize_default();
     void reserve_scale();
+    void copy_to_another_ptr(pointer);
+
 };
 
 template<class T, class Allocator>
@@ -276,16 +279,64 @@ const T* vector<T, Allocator>::data() const noexcept
 template<class T, class Allocator>
 void vector<T, Allocator>::push_back(const T& elem)
 {
+    //TODO: разобраться как работает forward
     reserve_scale();
-    std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, elem);
+    std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<const T&>(elem));
+    size_++;
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::push_back(T&& elem)
+{
+    reserve_scale();
+    std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<T&&>(elem));
     size_++;
 }
 
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(vector::size_type sz)
 {
-    //TODO: continue
+    if (sz < size_) {
+        size_ = sz;
+        return;
+    }
+
+    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
+
+    //TODO: remake with iterators
+    //and apply algorithm::move
+    copy_to_another_ptr(new_data);
+
+    for (size_type i = capacity_; i < sz; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, new_data + i);
+    }
+
+    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+
+    data_ = new_data;
+    capacity_ = sz;
 }
+
+template<class T, class Allocator>
+void vector<T, Allocator>::resize(vector::size_type sz, const T& elem)
+{
+    //TODO:addcheck
+    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
+
+    //TODO: remake with iterators
+    //and apply algorithm::move
+    copy_to_another_ptr(new_data);
+
+    for (size_type i = capacity_; i < sz; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, new_data + i, elem);
+    }
+
+    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+
+    data_ = new_data;
+    capacity_ = sz;
+}
+
 
 template<class T, class Allocator>
 void vector<T, Allocator>::reserve(vector::size_type capacity)
@@ -293,22 +344,7 @@ void vector<T, Allocator>::reserve(vector::size_type capacity)
     if (capacity <= capacity_) {
         return;
     }
-
-    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, capacity);
-
-    //TODO: remake with iterators
-    //and apply algorithm::move
-    for (size_type i = 0; i < capacity_; i++) {
-        std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
-        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
-    }
-
-    if (data_) {
-        std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
-    }
-
-    data_ = new_data;
-    capacity_ = capacity;
+    resize(capacity);
 }
 
 template<class T, class Allocator>
@@ -322,5 +358,21 @@ void vector<T, Allocator>::reserve_scale()
 
     reserve(new_capacity);
 }
+
+template<class T, class Allocator>
+void vector<T, Allocator>::pop_back()
+{
+    size_ = size_ > 0 ? size_ - 1 : 0;
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::copy_to_another_ptr(vector::pointer new_data)
+{
+    for (size_type i = 0; i < capacity_; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+    }
+}
+
 
 } //namespace atl
