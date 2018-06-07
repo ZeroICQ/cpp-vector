@@ -97,8 +97,8 @@ public:
     size_type capacity() const noexcept;
     bool      empty() const noexcept;
     void      reserve(size_type cp);
-//    void      shrink_to_fit();
-//
+    void      shrink_to_fit();
+
     // element access:
     reference       operator[](size_type n);
     const_reference operator[](size_type n) const;
@@ -114,7 +114,7 @@ public:
     const T* data() const noexcept;
 
     // modifiers:
-//    template <class... Args> void emplace_back(Args&&... args);
+    template <class... Args> void emplace_back(Args&& ...args);
     void push_back(const T& elem);
     void push_back(T&& elem);
     void pop_back();
@@ -320,7 +320,11 @@ void vector<T, Allocator>::resize(vector::size_type sz)
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(vector::size_type sz, const T& elem)
 {
-    //TODO:addcheck
+    if (sz < size_) {
+        size_ = sz;
+        return;
+    }
+
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
 
     //TODO: remake with iterators
@@ -372,6 +376,22 @@ void vector<T, Allocator>::copy_to_another_ptr(vector::pointer new_data)
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::shrink_to_fit()
+{
+    resize(size_);
+}
+
+template<class T, class Allocator>
+template<class... Args>
+void vector<T, Allocator>::emplace_back(Args&& ...args)
+{
+    reserve_scale();
+    //ASK: how does it work?
+    std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<Args&&>(args)...);
+    size_++;
 }
 
 
