@@ -44,14 +44,12 @@ public:
     using pointer                                      = typename std::allocator_traits<Allocator>::pointer;
     using const_pointer                                = typename std::allocator_traits<Allocator>::const_pointer;
 
-//    typedef /*implementation-defined*/                          iterator;
-//    typedef /*implementation-defined*/                          const_iterator;
-//    typedef std::reverse_iterator<iterator>                     reverse_iterator;
-//    typedef std::reverse_iterator<const_iterator>               const_reverse_iterator;
-
+//    typedef /*implementation-defined*/                iterator;
+//    typedef /*implementation-defined*/                const_iterator;
+//    typedef std::reverse_iterator<iterator>           reverse_iterator;
+//    typedef std::reverse_iterator<const_iterator>     const_reverse_iterator;
 
     // construct/copy/destroy:
-    //ASK: на стеке, rvalue?
     explicit vector(const Allocator& alloc = Allocator());
     explicit vector(size_type n);
 //    vector(size_type n, const T& value,const Allocator& = Allocator());
@@ -94,14 +92,14 @@ public:
 //    size_type max_size() const noexcept;
 //    void      resize(size_type sz);
 //    void      resize(size_type sz, const T& c);
-//    size_type capacity() const noexcept;
+    size_type capacity() const noexcept;
 //    bool      empty() const noexcept;
 //    void      reserve(size_type n);
 //    void      shrink_to_fit();
 //
 //    // element access:
-//    reference       operator[](size_type n);
-//    const_reference operator[](size_type n) const;
+    reference       operator[](size_type n);
+    const_reference operator[](size_type n) const;
 //    reference       at(size_type n);
 //    const_reference at(size_type n) const;
 //    reference       front();
@@ -138,6 +136,8 @@ private:
     size_type capacity_;
     size_type size_;
 
+    void initialize_default(size_type size);
+
 };
 
 template<class T, class Allocator>
@@ -146,13 +146,41 @@ vector<T, Allocator>::vector(const Allocator& alloc): allocator_(alloc) {}
 template<class T, class Allocator>
 vector<T, Allocator>::vector(vector::size_type n) : vector<T, Allocator>()
 {
-    data_ = std::allocator_traits<Allocator>::allocate(allocator_, n);
+    data_     = std::allocator_traits<Allocator>::allocate(allocator_, n);
+    size_     = n;
+    capacity_ = size_;
 }
 
 template<class T, class Allocator>
 vector<T, Allocator>::~vector()
 {
-    //TODO: clear
+    for (int i = 0; i < size_; i++) {
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+    }
+    std::allocator_traits<Allocator>::deallocate(allocator_, capacity_);
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::initialize_default(vector::size_type size)
+{
+    std::allocator_traits<Allocator>::deallocate(allocator_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::reference vector<T, Allocator>::operator[](vector::size_type n)
+{
+    return data_[n];
+}
+
+template<class T, class Allocator>
+const_reference vector<T, Allocator>::operator[](vector::size_type n) const {
+    return data_[n];
+}
+
+template<class T, class Allocator>
+vector::size_type vector<T, Allocator>::capacity() const noexcept
+{
+    return capacity_;
 }
 
 } //namespace atl
