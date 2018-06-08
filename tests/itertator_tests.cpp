@@ -41,7 +41,7 @@ TEST_CASE("Check STL requirements")
 //
 //    }
 
-    SECTION("can be incremented");
+    SECTION("can be incremented")
     {
         auto it = test_vector.begin();
         for (int i = 0; i < 10; i++) {
@@ -54,7 +54,7 @@ TEST_CASE("Check STL requirements")
         REQUIRE(*++it == 12);
     }
 
-    SECTION("can be decremented");
+    SECTION("can be decremented")
     {
         auto it = test_vector.begin();
         for (int i = 0; i < 10; i++) {
@@ -65,7 +65,7 @@ TEST_CASE("Check STL requirements")
         REQUIRE(*--it == 8);
     }
 
-    SECTION("comparision");
+    SECTION("comparision")
     {
         auto itA = test_vector.begin();
         auto itB = test_vector.begin();
@@ -90,7 +90,7 @@ TEST_CASE("Check STL requirements")
         REQUIRE(*itB == 15);
     }
 
-    SECTION("std::distance");
+    SECTION("std::distance")
     {
         auto itA = test_vector.begin();
         auto itB = test_vector.begin();
