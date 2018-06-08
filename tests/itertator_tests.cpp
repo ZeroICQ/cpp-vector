@@ -15,6 +15,13 @@ TEST_CASE("Check STL requirements")
     SECTION("copy-assignable")
     {
         REQUIRE(std::is_copy_assignable<TestVectorT>::value);
+
+        auto itA = test_vector.begin();
+        auto itB = itA;
+
+        itB += 30;
+
+        REQUIRE(itA != itB);
     }
 
     SECTION("copy-constructible")
@@ -90,6 +97,54 @@ TEST_CASE("Check STL requirements")
         REQUIRE(*itB == 15);
     }
 
+    SECTION("Iterator - n")
+    {
+        auto it = test_vector.begin();
+        it += 50;
+        auto itA = it - 12;
+
+        REQUIRE(*it == 50);
+        REQUIRE(*itA == 38);
+    }
+
+    SECTION("Iterator - Iterator")
+    {
+        auto itA = test_vector.begin();
+        auto itB = itA;
+
+        itA += 2;
+        itB += 50;
+
+        REQUIRE(itB - itA == 48);
+        REQUIRE(itA - itB == -48);
+    }
+
+    SECTION("Iterator += n")
+    {
+        auto it = test_vector.begin();
+
+        it += 10;
+
+        REQUIRE(*it == 10);
+
+        it += 5;
+        REQUIRE(*it == 15);
+    }
+
+    SECTION("Iterator -= n")
+    {
+        auto it = test_vector.begin();
+
+        it = it + 20;
+
+        it -= 10;
+
+        REQUIRE(*it == 10);
+        it -= 1;
+        REQUIRE(*it == 9);
+    }
+
+
     SECTION("std::distance")
     {
         auto itA = test_vector.begin();
@@ -100,8 +155,6 @@ TEST_CASE("Check STL requirements")
         REQUIRE(itA != itB);
         REQUIRE(++itA == itB);
     }
-
-
 }
 
 TEST_CASE("Iterator creation")

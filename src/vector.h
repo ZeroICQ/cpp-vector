@@ -67,6 +67,8 @@ public:
     template <class U, bool is_const_u, class F, bool is_const_f>
     friend bool operator!=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
 
+    VectorIterator& operator+=(size_type);
+
     template<class U, bool is_const_u>
     friend VectorIterator<U, is_const_u> operator+(const VectorIterator<U, is_const_u>& lhs,
                                                    typename VectorIterator<U, is_const_u>::size_type);
@@ -74,6 +76,17 @@ public:
     template<class U, bool is_const_u>
     friend VectorIterator<U, is_const_u> operator+(typename VectorIterator<U, is_const_u>::size_type,
                                                    const VectorIterator<U, is_const_u>& rhs);
+
+
+    VectorIterator& operator-=(size_type);
+
+    template<class U, bool is_const_u>
+    friend VectorIterator<U, is_const_u> operator-(const VectorIterator<U, is_const_u>& lhs,
+                                                   typename VectorIterator<U, is_const_u>::size_type);
+
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend typename VectorIterator<U, is_const_u>::difference_type operator-(VectorIterator<U, is_const_u>& lhs,
+                                                                             VectorIterator<F, is_const_f>& rhs);
 
 
 //    friend bool operator<(const iterator&, const iterator&);
@@ -172,17 +185,34 @@ VectorIterator<U, is_const_u> operator+(typename VectorIterator<U, is_const_u>::
     return rhs + lhs;
 }
 
-//template<class VectorIterator>
-//VectorIterator operator+(typename VectorIterator::size_type lhs, const VectorIterator& rhs)
-//{
-//    return rhs + lhs;
-//}
-//
-//template<class T, bool is_const>
-//VectorIterator<T, is_const> operator+(const VectorIterator<T, is_const>& lhs, typename VectorIterator<T, is_const>::size_type rhs)
-//{
-//    return VectorIterator<T, is_const>(lhs.start_ptr_, lhs.size_, lhs.pos_ + rhs);
-//}
+template<class T, bool is_const>
+VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator+=(VectorIterator::size_type n)
+{
+    pos_ += n;
+    return *this;
+}
+
+template<class T, bool is_const>
+VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator-=(VectorIterator::size_type n)
+{
+    pos_ -= n;
+    return *this;
+}
+
+template<class U, bool is_const_u>
+VectorIterator<U, is_const_u> operator-(const VectorIterator<U, is_const_u>& lhs,
+                                        typename VectorIterator<U, is_const_u>::size_type rhs)
+{
+    return VectorIterator<U, is_const_u>(lhs.start_ptr_, lhs.size_, lhs.pos_ - rhs);
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+typename VectorIterator<U, is_const_u>::difference_type operator-(VectorIterator<U, is_const_u>& lhs,
+                                                         VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ - rhs.pos_;
+}
+
 
 template <class T, class Allocator>
 class vector {
