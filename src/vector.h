@@ -80,9 +80,9 @@ public:
 
     // iterators:
     iterator                begin() noexcept;
-//    const_iterator          begin() const noexcept;
-//    iterator                end() noexcept;
-//    const_iterator          end() const noexcept;
+    const_iterator          begin() const noexcept;
+    iterator                end() noexcept;
+    const_iterator          end() const noexcept;
 //
 //    reverse_iterator        rbegin() noexcept;
 //    const_reverse_iterator  rbegin() const noexcept;
@@ -431,6 +431,24 @@ template<class T, class Allocator>
 typename vector<T,Allocator>::iterator vector<T, Allocator>::begin() noexcept
 {
     return iterator(data_, size_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::const_iterator vector<T, Allocator>::begin() const noexcept
+{
+    return iterator(data_, size_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::end() noexcept
+{
+    return iterator(data_, size_, size_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::const_iterator vector<T, Allocator>::end() const noexcept
+{
+    return iterator(data_, size_, size_);
 }
 
 } //namespace atl

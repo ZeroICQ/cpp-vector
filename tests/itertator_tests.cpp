@@ -1,7 +1,7 @@
 #include "catch.hpp"
 #include <iterator>
-#include <type_traits>
 #include "vector.h"
+#include <type_traits>
 
 TEST_CASE("Check STL requirements")
 {
@@ -198,6 +198,43 @@ TEST_CASE("Check STL requirements")
 
         REQUIRE(*itA == 41);
         REQUIRE(*itB == 39);
+    }
+}
+
+TEST_CASE("Const iterator")
+{
+    const atl::vector<long> const_test_vector(100, 99);
+
+    SECTION("Const iterator write")
+    {
+        auto is_const = std::is_const<const atl::vector<long>::iterator::value_type>::value;
+        REQUIRE(is_const);
+
+        is_const = std::is_const<atl::vector<long>::iterator::value_type>::value;
+        REQUIRE_FALSE(is_const);
+    }
+
+}
+
+TEST_CASE("Write iterator")
+{
+    atl::vector<long> test_vector;
+    for (atl::vector<long>::size_type i = 0; i < 100; i++) {
+        test_vector.push_back(i);
+    }
+
+    int i = 0;
+    for (auto& it : test_vector) {
+        REQUIRE(it == i);
+        i++;
+    }
+
+    for (auto& it : test_vector) {
+        it = 989898;
+    }
+
+    for (auto& it : test_vector) {
+        REQUIRE(it == 989898);
     }
 }
 
