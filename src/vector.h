@@ -10,7 +10,7 @@ namespace atl {
 
 //FD
 //template <typename T, bool is_const> class Iterator;
-//template <typename T, typename Allocator> class vector;
+template <typename T, typename Allocator = std::allocator<T>> class vector;
 
 //operators
 //template <class T, class Allocator>
@@ -35,8 +35,156 @@ namespace atl {
 //template <class T> struct hash;
 //template <class Allocator> struct hash<vector<bool, Allocator> >;
 
+template <class T, bool is_const>
+class VectorIterator
+{
+public:
+    //ASK: можно/нужно вынести в iterator_traits?
+    using size_type         = std::size_t;
+    using difference_type   = std::ptrdiff_t ;
+    using value_type        = typename std::conditional<is_const, const T, T>::type;
+    using reference         = typename std::conditional<is_const, const T&, T&>::type;
+    using pointer           = typename std::conditional<is_const, const T*, T*>::type;
+    using iterator_category = std::random_access_iterator_tag ;
 
-template <class T, class Allocator = std::allocator<T>>
+    VectorIterator() = delete;
+    VectorIterator(const VectorIterator& other) : VectorIterator(other.start_ptr_, other.size_, other.pos_) {}
+    VectorIterator& operator=(const VectorIterator& rhs);
+
+    VectorIterator& operator++(); //prefix increment
+    VectorIterator operator++(int); //postfix increment
+
+    VectorIterator& operator--(); //prefix decrement
+    //ASK: whats wrong
+    VectorIterator operator--(int); //postfix decrement
+
+    reference operator*() const;
+    pointer operator->();
+
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend bool operator==(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
+
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend bool operator!=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
+
+    template<class U, bool is_const_u>
+    friend VectorIterator<U, is_const_u> operator+(const VectorIterator<U, is_const_u>& lhs,
+                                                   typename VectorIterator<U, is_const_u>::size_type);
+
+    template<class U, bool is_const_u>
+    friend VectorIterator<U, is_const_u> operator+(typename VectorIterator<U, is_const_u>::size_type,
+                                                   const VectorIterator<U, is_const_u>& rhs);
+
+
+//    friend bool operator<(const iterator&, const iterator&);
+//    friend bool operator>(const iterator&, const iterator&);
+//    friend bool operator<=(const iterator&, const iterator&);
+//    friend bool operator>=(const iterator&, const iterator&);
+
+private:
+    explicit VectorIterator(pointer elem_ptr, difference_type size, difference_type pos = 0)
+            : start_ptr_(elem_ptr), size_(size), pos_(pos) {}
+
+    pointer start_ptr_;
+    difference_type size_;
+    difference_type pos_;
+
+    friend vector<T>;
+};
+
+template<class T, bool is_const>
+VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator=(const VectorIterator& rhs)
+{
+    if (this != &rhs) {
+        start_ptr_ = rhs.start_ptr_;
+        size_ = rhs.size_;
+        pos_ = rhs.pos_;
+    }
+
+    return *this;
+}
+
+template<class T, bool is_const>
+VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator++()
+{
+    pos_++;
+    return *this;
+}
+
+template<class T, bool is_const>
+VectorIterator<T, is_const> VectorIterator<T, is_const>::operator++(int)
+{
+    VectorIterator<T, is_const> tmp(*this); //copy
+    operator++();
+    return tmp;
+}
+
+template<class T, bool is_const>
+VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator--()
+{
+    pos_--;
+    return *this;
+}
+
+template<class T, bool is_const>
+VectorIterator<T, is_const> VectorIterator<T, is_const>::operator--(int)
+{
+    VectorIterator<T, is_const> tmp(*this); //copy
+    operator--();
+    return tmp;
+}
+
+template<class T, bool is_const>
+typename VectorIterator<T, is_const>::reference VectorIterator<T, is_const>::operator*() const
+{
+    return *(start_ptr_ + pos_);
+}
+
+template<class T, bool is_const>
+typename VectorIterator<T, is_const>::pointer VectorIterator<T, is_const>::operator->()
+{
+    return start_ptr_ + pos_;
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+bool operator==(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ == rhs.pos_;
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+bool operator!=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ != rhs.pos_;
+}
+
+template<class U, bool is_const_u>
+VectorIterator<U, is_const_u> operator+(const VectorIterator<U, is_const_u>& lhs,
+                                        typename VectorIterator<U, is_const_u>::size_type rhs)
+{
+    return VectorIterator<U, is_const_u>(lhs.start_ptr_, lhs.size_, lhs.pos_ + rhs);
+}
+
+template<class U, bool is_const_u>
+VectorIterator<U, is_const_u> operator+(typename VectorIterator<U, is_const_u>::size_type lhs,
+                                        const VectorIterator<U, is_const_u>& rhs)
+{
+    return rhs + lhs;
+}
+
+//template<class VectorIterator>
+//VectorIterator operator+(typename VectorIterator::size_type lhs, const VectorIterator& rhs)
+//{
+//    return rhs + lhs;
+//}
+//
+//template<class T, bool is_const>
+//VectorIterator<T, is_const> operator+(const VectorIterator<T, is_const>& lhs, typename VectorIterator<T, is_const>::size_type rhs)
+//{
+//    return VectorIterator<T, is_const>(lhs.start_ptr_, lhs.size_, lhs.pos_ + rhs);
+//}
+
+template <class T, class Allocator>
 class vector {
 public:
     // types:
@@ -49,8 +197,8 @@ public:
     using allocator_type                               = Allocator;
     using pointer                                      = typename std::allocator_traits<Allocator>::pointer;
     using const_pointer                                = typename std::allocator_traits<Allocator>::const_pointer;
-//    using iterator                                     = Iterator<T, false>;
-//    using const_iterator                               = Iterator<T, true>;
+    using iterator                                     = VectorIterator<T, false>;
+    using const_iterator                               = VectorIterator<T, true>;
 
 //    typedef std::reverse_iterator<iterator>           reverse_iterator;
 //    typedef std::reverse_iterator<const_iterator>     const_reverse_iterator;
@@ -58,7 +206,7 @@ public:
     // construct/copy/destroy:
     explicit vector(const Allocator& alloc = Allocator());
     explicit vector(size_type size);
-//    vector(size_type n, const T& value,const Allocator& = Allocator());
+    vector(size_type size, const T& value,const Allocator& = Allocator());
 //    template <class InputIterator>
 //    vector(InputIterator first, InputIterator last,const Allocator& = Allocator());
 //    vector(const vector<T,Allocator>& x);
@@ -76,9 +224,9 @@ public:
 //    void assign(size_type n, const T& t);
 //    void assign(initializer_list<T>);
     allocator_type get_allocator() const noexcept;
-//
+
     // iterators:
-//    iterator                begin() noexcept;
+    iterator                begin() noexcept;
 //    const_iterator          begin() const noexcept;
 //    iterator                end() noexcept;
 //    const_iterator          end() const noexcept;
@@ -168,6 +316,20 @@ vector<T, Allocator>::vector(vector::size_type size)
 {
     initialize_default();
 }
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(vector::size_type size, const T& value, const Allocator& allocator)
+         :  allocator_(allocator),
+            data_(std::allocator_traits<Allocator>::allocate(allocator_, size)),
+            size_(size),
+            capacity_(size)
+{
+    //TODO: rmk with iterators
+    for (size_type i = 0; i < size_; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, std::forward<const T&>(value));
+    }
+}
+
 
 template<class T, class Allocator>
 vector<T, Allocator>::~vector()
@@ -410,6 +572,12 @@ template<class T, class Allocator>
 void vector<T, Allocator>::clear() noexcept
 {
     resize(0);
+}
+
+template<class T, class Allocator>
+typename vector<T,Allocator>::iterator vector<T, Allocator>::begin() noexcept
+{
+    return iterator(data_, size_);
 }
 
 } //namespace atl
