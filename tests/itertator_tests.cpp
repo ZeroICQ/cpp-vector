@@ -1,6 +1,7 @@
 #include "catch.hpp"
-#include "vector.h"
+#include <iterator>
 #include <type_traits>
+#include "vector.h"
 
 TEST_CASE("Check STL requirements")
 {
@@ -144,6 +145,30 @@ TEST_CASE("Check STL requirements")
         REQUIRE(*it == 9);
     }
 
+    SECTION("[]")
+    {
+        auto itA = test_vector.begin();
+        REQUIRE(itA[40] == 40);
+        REQUIRE(itA[11] == 11);
+    }
+
+    SECTION("relational operators")
+    {
+        auto itA = test_vector.begin();
+        auto itB = test_vector.begin();
+
+        itA += 50;
+
+        REQUIRE(itB < itA);
+        REQUIRE(itB <= itA);
+
+        REQUIRE_FALSE(itB > itA);
+        REQUIRE_FALSE(itB >= itA);
+
+        REQUIRE(itA > itB);
+        REQUIRE(itA >= itA);
+
+    }
 
     SECTION("std::distance")
     {
@@ -155,6 +180,25 @@ TEST_CASE("Check STL requirements")
         REQUIRE(itA != itB);
         REQUIRE(++itA == itB);
     }
+
+    SECTION("std::advance")
+    {
+        auto it = test_vector.begin();
+        std::advance(it, 5);
+        REQUIRE(*it == 5);
+    }
+
+    SECTION("std::next, std::prev")
+    {
+        auto it = test_vector.begin();
+        it += 40;
+
+        auto itA = std::next(it);
+        auto itB = std::prev(it);
+
+        REQUIRE(*itA == 41);
+        REQUIRE(*itB == 39);
+    }
 }
 
 TEST_CASE("Iterator creation")
@@ -162,7 +206,7 @@ TEST_CASE("Iterator creation")
     atl::vector<int> test_vector(100, 228);
     SECTION(".begin()")
     {
-        auto kek = test_vector.begin();
-        int a = 10;
+//        auto kek = test_vector.begin();
+//        int a = 10;
     }
 }

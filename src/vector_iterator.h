@@ -47,7 +47,6 @@ public:
     friend VectorIterator<U, is_const_u> operator+(typename VectorIterator<U, is_const_u>::size_type,
                                                    const VectorIterator<U, is_const_u>& rhs);
 
-
     VectorIterator& operator-=(size_type);
 
     template<class U, bool is_const_u>
@@ -58,11 +57,19 @@ public:
     friend typename VectorIterator<U, is_const_u>::difference_type operator-(VectorIterator<U, is_const_u>& lhs,
                                                                              VectorIterator<F, is_const_f>& rhs);
 
+    reference operator[](size_type) const;
 
-//    friend bool operator<(const iterator&, const iterator&);
-//    friend bool operator>(const iterator&, const iterator&);
-//    friend bool operator<=(const iterator&, const iterator&);
-//    friend bool operator>=(const iterator&, const iterator&);
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend bool operator<(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
+
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend bool operator>(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
+
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend bool operator<=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
+
+    template <class U, bool is_const_u, class F, bool is_const_f>
+    friend bool operator>=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
 
 private:
     explicit VectorIterator(pointer elem_ptr, difference_type size, difference_type pos = 0)
@@ -183,5 +190,34 @@ typename VectorIterator<U, is_const_u>::difference_type operator-(VectorIterator
     return lhs.pos_ - rhs.pos_;
 }
 
+template<class T, bool is_const>
+typename VectorIterator<T, is_const>::reference VectorIterator<T, is_const>::operator[](VectorIterator::size_type n) const
+{
+    return *(start_ptr_ + n);
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+bool operator<(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ < rhs.pos_;
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+bool operator>(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ > rhs.pos_;
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+bool operator<=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ <= rhs.pos_;
+}
+
+template<class U, bool is_const_u, class F, bool is_const_f>
+bool operator>=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs)
+{
+    return lhs.pos_ >= rhs.pos_;
+}
 
 }//namespace atl
