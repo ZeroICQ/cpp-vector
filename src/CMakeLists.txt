@@ -2,7 +2,7 @@
 SET(GCC_COMPILE_FLAGS "-Wall -pedantic")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}")
 
-set(SRC main.cpp vector.h)
+set(SRC main.cpp vector.h vector_iterator.h)
 
 add_executable(vector ${SRC})
 
