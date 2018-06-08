@@ -1,16 +1,20 @@
 #pragma once
 
 #include <memory>
-#include <math.h>
+#include <cmath>
 #include <utility>
+#include <iterator>
 
 //Alexey template library
 namespace atl {
 
-//template <class T, class Allocator = allocator<T> > class vector;
-//
+//FD
+//template <typename T, bool is_const> class Iterator;
+//template <typename T, typename Allocator> class vector;
+
+//operators
 //template <class T, class Allocator>
-//bool operator==(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
+//    bool operator==(const vector<T,Allocator>& lhs,const vector<T,Allocator>& rhs);
 //template <class T, class Allocator>
 //bool operator< (const vector<T,Allocator>& x,const vector<T,Allocator>& y);
 //template <class T, class Allocator>
@@ -45,9 +49,9 @@ public:
     using allocator_type                               = Allocator;
     using pointer                                      = typename std::allocator_traits<Allocator>::pointer;
     using const_pointer                                = typename std::allocator_traits<Allocator>::const_pointer;
+//    using iterator                                     = Iterator<T, false>;
+//    using const_iterator                               = Iterator<T, true>;
 
-//    typedef /*implementation-defined*/                iterator;
-//    typedef /*implementation-defined*/                const_iterator;
 //    typedef std::reverse_iterator<iterator>           reverse_iterator;
 //    typedef std::reverse_iterator<const_iterator>     const_reverse_iterator;
 
@@ -131,7 +135,8 @@ public:
 //    iterator erase(const_iterator position);
 //    iterator erase(const_iterator first, const_iterator last);
 //    void     swap(vector<T,Allocator>&);
-//    void     clear() noexcept;
+    void     clear() noexcept;
+
 private:
     static constexpr double     INCREASE_CAPACITY_FACTOR = 1.5;
     static constexpr size_type  MIN_CAPACITY             = 10;
@@ -144,8 +149,8 @@ private:
     void initialize_default();
     void reserve_scale();
     void copy_to_another_ptr(pointer);
-
 };
+
 
 template<class T, class Allocator>
 vector<T, Allocator>::vector(const Allocator& alloc)
@@ -279,7 +284,6 @@ const T* vector<T, Allocator>::data() const noexcept
 template<class T, class Allocator>
 void vector<T, Allocator>::push_back(const T& elem)
 {
-    //TODO: разобраться как работает forward
     reserve_scale();
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<const T&>(elem));
     size_++;
@@ -297,6 +301,10 @@ template<class T, class Allocator>
 void vector<T, Allocator>::resize(vector::size_type sz)
 {
     if (sz < size_) {
+        for (auto i = sz; sz < size_; i++) {
+            std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+        }
+
         size_ = sz;
         return;
     }
@@ -320,7 +328,12 @@ void vector<T, Allocator>::resize(vector::size_type sz)
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(vector::size_type sz, const T& elem)
 {
+    //TODO
     if (sz < size_) {
+        for (auto i = sz; sz < size_; i++) {
+            std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+        }
+
         size_ = sz;
         return;
     }
@@ -389,10 +402,14 @@ template<class... Args>
 void vector<T, Allocator>::emplace_back(Args&& ...args)
 {
     reserve_scale();
-    //ASK: how does it work?
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<Args&&>(args)...);
     size_++;
 }
 
+template<class T, class Allocator>
+void vector<T, Allocator>::clear() noexcept
+{
+    resize(0);
+}
 
 } //namespace atl
