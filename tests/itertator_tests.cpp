@@ -44,11 +44,33 @@ TEST_CASE("Check STL requirements")
         ++it;
         REQUIRE(*it == 2);
     }
-//    TODO: implement
-//    SECTION("->")
-//    {
-//
-//    }
+
+
+    SECTION("->")
+    {
+        class SomeClass
+        {
+        public:
+            SomeClass(char p) :p_(p) {}
+            SomeClass() :p_('k') {}
+            char getP() { return p_; }
+        private:
+            char p_;
+        };
+
+
+        atl::vector<SomeClass> test_vector;
+        test_vector.emplace_back('a');
+        test_vector.emplace_back('b');
+        test_vector.emplace_back('c');
+
+        auto it = test_vector.begin();
+        REQUIRE(it->getP() == 'a');
+        REQUIRE((it+1)->getP() == 'b');
+        REQUIRE((it+2)->getP() == 'c');
+        REQUIRE(it->getP() == 'a');
+    }
+
 
     SECTION("can be incremented")
     {
