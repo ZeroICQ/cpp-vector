@@ -125,8 +125,8 @@ public:
     const_reference back() const;
 
     //data access
-    T*       data() noexcept;
-    const T* data() const noexcept;
+    pointer       data() noexcept;
+    const_pointer data() const noexcept;
 
     // modifiers:
     template <class... Args> void emplace_back(Args&& ...args);
