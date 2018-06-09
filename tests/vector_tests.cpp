@@ -3,8 +3,8 @@
 #include <memory>
 #include <cstring>
 
-template <class T>
-bool is_same(const atl::vector<T>& a, const std::vector<T>& s)
+template <class T, class U, class = typename T::iterator, class = typename U::iterator>
+bool is_same(const T& a, const U& s)
 {
     if (s.size() != a.size()) {
         return false;
@@ -203,3 +203,21 @@ TEST_CASE("Pushback", "[access][modify]")
 
 }
 
+TEST_CASE("Operators")
+{
+    SECTION("copy assignment = ")
+    {
+        atl::vector<int> test_vector_a;
+        atl::vector<int> test_vector_b;
+        test_vector_a.push_back(5);
+        test_vector_a.push_back(10);
+
+        test_vector_b = test_vector_a;
+
+        REQUIRE(is_same(test_vector_a, test_vector_b));
+
+        test_vector_a[1] = 500;
+        REQUIRE_FALSE(is_same(test_vector_a, test_vector_b));
+
+    }
+}

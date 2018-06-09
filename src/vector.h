@@ -73,9 +73,10 @@ public:
     vector(vector&&, const Allocator&);
 
     vector(std::initializer_list<T>, const Allocator& = Allocator());
-//
+    //Destructor
     ~vector();
-//    vector<T,Allocator>& operator=(const vector<T,Allocator>& x);
+    //operators
+    vector<T,Allocator>& operator=(const vector<T,Allocator>& rhs);
 //    vector<T,Allocator>& operator=(vector<T,Allocator>&& x);
 //    vector& operator=(initializer_list<T>);
     template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
@@ -108,7 +109,7 @@ public:
     void      resize(size_type sz, const T& elem);
     size_type capacity() const noexcept;
     bool      empty() const noexcept;
-    void      reserve(size_type cp);
+    void      reserve(size_type capacity);
     void      shrink_to_fit();
 
     // element access:
@@ -159,12 +160,13 @@ private:
 
     void initialize_default();
     void reserve_for_push();
-    void copy_to_another_ptr(pointer);
+    void move_to_another_ptr(pointer);
 
     void copy_from_another_vector(const vector<T>& other);
 
     template<class It, class = typename std::iterator_traits<It>::iterator_category>
     void fill_with_iterator(It first, It last);
+    void deallocate_data();
 };
 
 
@@ -265,10 +267,7 @@ vector<T, Allocator>::vector(std::initializer_list<T> ilist, const Allocator& al
 template<class T, class Allocator>
 vector<T, Allocator>::~vector()
 {
-    for (size_type i = 0; i < capacity_; i++) {
-        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
-    }
-    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+    deallocate_data();
 }
 
 template<class T, class Allocator>
@@ -407,7 +406,7 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz)
 
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
 
-    copy_to_another_ptr(new_data);
+    move_to_another_ptr(new_data);
     for (size_type i = capacity_; i < new_capacity; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i);
     }
@@ -421,7 +420,6 @@ template<class T, class Allocator>
 void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz, const T& elem)
 {
     //TODO: remove copypaste
-
     auto new_capacity = std::max(sz, MIN_CAPACITY);
     if (sz < size_) {
         for (auto i = sz; sz < size_; i++) {
@@ -434,7 +432,7 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz, c
 
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
 
-    copy_to_another_ptr(new_data);
+    move_to_another_ptr(new_data);
     for (size_type i = capacity_; i < new_capacity; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i, elem);
     }
@@ -446,7 +444,7 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz, c
 
 
 template<class T, class Allocator>
-void vector<T, Allocator>::reserve(vector::size_type capacity)
+void vector<T, Allocator>::reserve(vector<T, Allocator>::size_type capacity)
 {
     if (capacity <= capacity_) {
         return;
@@ -478,7 +476,7 @@ void vector<T, Allocator>::pop_back()
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::copy_to_another_ptr(vector::pointer new_data)
+void vector<T, Allocator>::move_to_another_ptr(vector::pointer new_data)
 {
     for (size_type i = 0; i < capacity_; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
@@ -582,5 +580,37 @@ void vector<T, Allocator>::fill_with_iterator(It first, It last)
         std::allocator_traits<Allocator>::construct(allocator_, data_ + i, *it);
     }
 }
+
+template<class T, class Allocator>
+vector<T, Allocator>& vector<T, Allocator>::operator=(const vector<T, Allocator>& rhs)
+{
+    deallocate_data();
+    allocator_ = rhs.allocator_;
+    capacity_ = rhs.capacity_;
+    size_ = rhs.size_;
+
+    data_ = std::allocator_traits<Allocator>::allocate(allocator_, capacity_);
+    copy_from_another_vector(rhs);
+
+    return *this;
+}
+
+//ATTENTION leaves container in non-consistent state
+template<class T, class Allocator>
+void vector<T, Allocator>::deallocate_data()
+{
+    for (size_type i = 0; i < capacity_; i++) {
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+    }
+    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+}
+
+//    : allocator_(std::allocator_traits<Allocator>::select_on_container_copy_construction(other.get_allocator())),
+//    data_(std::allocator_traits<Allocator>::allocate(allocator_, other.capacity_)),
+//    size_(other.size_),
+//    capacity_(other.capacity_)
+//{
+//    copy_from_another_vector(other);
+//}
 
 } //namespace atl
