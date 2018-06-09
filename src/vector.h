@@ -302,8 +302,7 @@ typename vector<T, Allocator>::size_type vector<T, Allocator>::capacity() const 
 template<class T, class Allocator>
 bool vector<T, Allocator>::empty() const noexcept
 {
-
-    return begin() ==  end();
+    return size_ == 0;
 }
 
 template<class T, class Allocator>
