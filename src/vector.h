@@ -400,25 +400,45 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_s
 {
     auto new_capacity = std::max(new_size, MIN_CAPACITY);
 
+    if (new_size == size_) {
+        return;
+    }
+
     if (new_size < size_) {
         destruct_data(new_size);
         initialize_default(new_size);
         size_ = new_size;
         return;
     }
-    //don't touch. order is critical
-    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
-    move_to_another_ptr(new_data);
-    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
-    data_ = new_data;
-    capacity_ = new_capacity;
+
+    if (new_capacity > capacity_) {
+        auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
+        move_to_another_ptr(new_data);
+
+        std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+        data_= new_data;
+        capacity_ = new_capacity;
+    }
+
     initialize_default(size_);
+    size_ = new_size;
+
+//    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+//    data_ = new_data;
+//    capacity_ = new_capacity;
+//    initialize_default(size_);
+//    size_ = new_size;
 }
 
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size, const T& elem)
 {
     auto new_capacity = std::max(new_size, MIN_CAPACITY);
+
+    if (new_size == size_) {
+        return;
+    }
+
     if (new_size < size_) {
         destruct_data(new_size);
         initialize_default(new_size);
@@ -426,16 +446,21 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_s
         return;
     }
 
-    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
+    if (new_capacity > capacity_) {
+        auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
+        move_to_another_ptr(new_data);
 
-    move_to_another_ptr(new_data);
-    for (size_type i = capacity_; i < new_capacity; i++) {
-        std::allocator_traits<Allocator>::construct(allocator_, new_data + i, elem);
+        std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+        data_= new_data;
+        capacity_ = new_capacity;
     }
 
-    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
-    data_ = new_data;
-    capacity_ = new_capacity;
+
+    for (size_type i = size_; i < new_size; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, elem);
+    }
+
+    size_ = new_size;
 }
 
 template<class T, class Allocator>
@@ -444,7 +469,14 @@ void vector<T, Allocator>::reserve(vector<T, Allocator>::size_type capacity)
     if (capacity <= capacity_) {
         return;
     }
-    resize(capacity);
+
+    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, capacity);
+    move_to_another_ptr(new_data);
+
+    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+    data_= new_data;
+    capacity_ = capacity;
+    initialize_default(size_);
 }
 
 template<class T, class Allocator>
@@ -496,7 +528,24 @@ void vector<T, Allocator>::copy_from_another_vector(const vector<T>& other)
 template<class T, class Allocator>
 void vector<T, Allocator>::shrink_to_fit()
 {
-    resize(size_);
+    if (capacity_ == size_) {
+        return;
+    }
+
+    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, size_);
+
+    for (size_type i = 0; i < size_; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+    }
+
+    for (size_type i = size_; i < capacity_; i++) {
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+    }
+
+    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+    data_= new_data;
+    capacity_ = size_;
 }
 
 template<class T, class Allocator>

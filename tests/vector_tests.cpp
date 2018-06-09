@@ -106,6 +106,18 @@ TEST_CASE("Constructors", "[create]")
 
 TEST_CASE("Access", "[access]")
 {
+    SECTION("non const []")
+    {
+        atl::vector<int> test_vector(10, 6767);
+        REQUIRE(test_vector[5] == 6767);
+    }
+
+    SECTION("const")
+    {
+        const atl::vector<int> test_vector(10, 6767);
+        REQUIRE(test_vector[5] == 6767);
+    }
+
     SECTION(".at(pos)")
     {
         atl::vector<int> test_vector(10);
@@ -178,7 +190,7 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(test_vector.capacity() == 2);
 
         test_vector.resize(15, 98);
-        REQUIRE(test_vector.size() == 0);
+        REQUIRE(test_vector.size() == 15);
         REQUIRE(test_vector.capacity() == 15);
 
         for (auto& val : test_vector) {
@@ -189,7 +201,7 @@ TEST_CASE("Modify", "[modify]")
     SECTION("shrink_to_fit")
     {
         atl::vector<int> test_vector(11, 45);
-        test_vector.resize(500);
+        test_vector.reserve(500);
         REQUIRE(test_vector.size() == 11);
         REQUIRE(test_vector.capacity() == 500);
         test_vector.push_back(89);
@@ -231,7 +243,6 @@ TEST_CASE("Pushback", "[access][modify]")
         REQUIRE(test_vector.back() == 2);
 
     }
-
 }
 
 TEST_CASE("Operators")
