@@ -231,3 +231,26 @@ TEST_CASE("Operators")
         REQUIRE(test_vector[1] == "memes");
     }
 }
+
+TEST_CASE("Iterators")
+{
+    SECTION("Reverse non-const iterators")
+    {
+        atl::vector<int> test_vector = {10, 12, 13, 229};
+
+        atl::vector<int>::size_type i = test_vector.size() - 1;
+        for(auto it = test_vector.rbegin(); it != test_vector.rend(); it++) {
+            REQUIRE(*it == test_vector[i--]);
+        }
+    }
+
+    SECTION("Reverse const iterators")
+    {
+        const atl::vector<int> test_vector = {10, 12, 13, 229};
+
+        atl::vector<int>::size_type i = test_vector.size() - 1;
+        for(auto it = test_vector.rbegin(); it != test_vector.rend(); it++) {
+            REQUIRE(*it == test_vector[i--]);
+        }
+    }
+}
