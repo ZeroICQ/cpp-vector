@@ -253,4 +253,18 @@ TEST_CASE("Iterators")
             REQUIRE(*it == test_vector[i--]);
         }
     }
+
+    SECTION("crbegin, crend")
+    {
+        REQUIRE(std::is_const<std::iterator_traits<atl::vector<int>::const_iterator>::value_type>::value);
+        REQUIRE(std::is_const<std::iterator_traits<atl::vector<int>::const_reverse_iterator >::value_type>::value);
+
+        atl::vector<int> test_vector = {10, 12, 13, 229};
+
+        atl::vector<int>::size_type i = test_vector.size() - 1;
+
+        for(auto it = test_vector.crbegin(); it != test_vector.crend(); it++) {
+            REQUIRE(*it == test_vector[i--]);
+        }
+    }
 }

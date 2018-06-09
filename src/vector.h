@@ -98,11 +98,11 @@ public:
     const_reverse_iterator  rbegin() const noexcept;
     reverse_iterator        rend() noexcept;
     const_reverse_iterator  rend() const noexcept;
-//
-//    const_iterator          cbegin() noexcept;
-//    const_iterator          cend() noexcept;
-//    const_reverse_iterator  crbegin() const noexcept;
-//    const_reverse_iterator  crend() const noexcept;
+
+    const_iterator          cbegin() noexcept;
+    const_iterator          cend() noexcept;
+    const_reverse_iterator  crbegin() const noexcept;
+    const_reverse_iterator  crend() const noexcept;
 //
     // capacity:
     size_type size() const noexcept;
@@ -565,6 +565,31 @@ typename vector<T, Allocator>::const_reverse_iterator vector<T, Allocator>::rend
 {
     return const_reverse_iterator(begin());
 }
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::const_iterator vector<T, Allocator>::cbegin() noexcept
+{
+    return const_iterator(data_, size_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::const_iterator vector<T, Allocator>::cend() noexcept
+{
+    return const_iterator(data_, size_, size_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::const_reverse_iterator vector<T, Allocator>::crbegin() const noexcept
+{
+    return const_reverse_iterator(end());
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::const_reverse_iterator vector<T, Allocator>::crend() const noexcept
+{
+    return const_reverse_iterator(begin());
+}
+
 
 template<class T, class Allocator>
 void vector<T, Allocator>::assign(vector::size_type n, const T& elem)
