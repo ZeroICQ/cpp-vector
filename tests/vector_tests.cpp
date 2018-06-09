@@ -185,6 +185,19 @@ TEST_CASE("Modify", "[modify]")
             REQUIRE(val == 98);
         }
     }
+
+    SECTION("shrink_to_fit")
+    {
+        atl::vector<int> test_vector(11, 45);
+        test_vector.resize(500);
+        REQUIRE(test_vector.size() == 11);
+        REQUIRE(test_vector.capacity() == 500);
+        test_vector.push_back(89);
+
+        test_vector.shrink_to_fit();
+        REQUIRE(test_vector.size() == 12);
+        REQUIRE(test_vector.capacity() == 12);
+    }
 }
 
 TEST_CASE("Pushback", "[access][modify]")
