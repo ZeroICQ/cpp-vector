@@ -61,11 +61,14 @@ public:
     explicit vector(const Allocator& alloc = Allocator());
     explicit vector(size_type size);
     vector(size_type size, const T& value, const Allocator& = Allocator());
+
     template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
     vector(InputIterator first, InputIterator last,const Allocator& = Allocator());
-//    vector(const vector<T,Allocator>& x);
+    //copy constructors
+    vector(const vector<T,Allocator>& other);
+    vector(const vector&, const Allocator&);
+
 //    vector(vector&&);
-//    vector(const vector&, const Allocator&);
 //    vector(vector&&, const Allocator&);
 //    vector(initializer_list<T>, const Allocator& = Allocator());
 //
@@ -202,6 +205,34 @@ vector<T, Allocator>::vector(InputIterator first, InputIterator last, const Allo
     }
 }
 
+template<class T, class Allocator>
+vector<T, Allocator>::vector(const vector<T, Allocator>& other)
+     : allocator_(std::allocator_traits<Allocator>::select_on_container_copy_construction(other.get_allocator())),
+       data_(std::allocator_traits<Allocator>::allocate(allocator_, other.capacity_)),
+       size_(other.size_),
+       capacity_(other.capacity_)
+{
+    int i = 0;
+    for (const auto& val : other) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, val);//copy
+        ++i;
+    }
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(const vector& other, const Allocator& alloc)
+    : allocator_(alloc),
+      data_(std::allocator_traits<Allocator>::allocate(allocator_, other.capacity_)),
+      size_(other.size_),
+      capacity_(other.capacity_)
+{
+    //TODO: copypaste
+    int i = 0;
+    for (const auto& val : other) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, val);//copy
+        ++i;
+    }
+}
 
 template<class T, class Allocator>
 vector<T, Allocator>::~vector()

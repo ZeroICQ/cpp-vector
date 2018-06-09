@@ -1,5 +1,7 @@
 #include "catch.hpp"
 #include "vector.h"
+#include <memory>
+#include <cstring>
 
 template <class T>
 bool is_same(const atl::vector<T>& a, const std::vector<T>& s)
@@ -21,11 +23,18 @@ class NotIntegralType
 {
 public:
     NotIntegralType() : large_field_a(new int[100]), large_field_b(new int[100]) {}
-    NotIntegralType(NotIntegralType&& a) {
+    NotIntegralType(NotIntegralType&& a)
+    {
         large_field_a = a.large_field_a;
         large_field_b = a.large_field_b;
         a.large_field_a = nullptr;
         a.large_field_b = nullptr;
+    }
+
+    NotIntegralType(const NotIntegralType& other) : NotIntegralType()
+    {
+        std::memcpy(large_field_a, other.large_field_a, 100 * ( sizeof(int)));
+        std::memcpy(large_field_b, other.large_field_b, 100 * ( sizeof(int)));
     }
 
     ~NotIntegralType() {
@@ -33,7 +42,6 @@ public:
         delete[] large_field_b;
     }
 
-private:
     int* large_field_a;
     int* large_field_b;
 };
@@ -56,7 +64,7 @@ TEST_CASE("Constructors", "[create]")
         REQUIRE(test_vector.empty());
     }
 
-    SECTION("Iterators")
+    SECTION("construct with iterators")
     {
         std::vector<int> std_vec = {0, 10, 132, 228};
         atl::vector<int> test_vec(std_vec.begin(), std_vec.end());
@@ -64,8 +72,18 @@ TEST_CASE("Constructors", "[create]")
 
         REQUIRE(is_same(test_vec, std_vec));
     }
-}
 
+    SECTION("copy constuctor without allocator")
+    {
+        atl::vector<NotIntegralType> test_vector_a(10);
+        test_vector_a[4].large_field_a[4] = 127;
+
+        atl::vector<NotIntegralType> test_vector_b(test_vector_a);
+
+        test_vector_a[4].large_field_a[4] = 128;
+        REQUIRE(test_vector_b[4].large_field_a[4] == 127);
+    }
+}
 
 TEST_CASE("Access", "[access]")
 {
