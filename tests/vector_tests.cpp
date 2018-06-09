@@ -118,13 +118,36 @@ TEST_CASE("Access", "[access]")
         REQUIRE(test_vector[5] == 6767);
     }
 
-    SECTION(".at(pos)")
+    SECTION("non const at(pos)")
     {
         atl::vector<int> test_vector(10);
         int val = test_vector.at(5);
         REQUIRE(val == 0);
         REQUIRE_THROWS_AS(test_vector.at(11), std::out_of_range);
         REQUIRE_THROWS_AS(test_vector.at(-1), std::out_of_range);
+    }
+
+    SECTION("const at(pos)")
+    {
+        const atl::vector<int> test_vector(10);
+        int val = test_vector.at(5);
+        REQUIRE(val == 0);
+        REQUIRE_THROWS_AS(test_vector.at(11), std::out_of_range);
+        REQUIRE_THROWS_AS(test_vector.at(-1), std::out_of_range);
+    }
+
+    SECTION("front/back")
+    {
+        atl::vector<int> test_vector = {56, 76, 98};
+        REQUIRE(test_vector.front() == 56);
+        REQUIRE(test_vector.back() == 98);
+    }
+
+    SECTION("const front/back")
+    {
+        const atl::vector<int> test_vector = {56, 76, 98};
+        REQUIRE(test_vector.front() == 56);
+        REQUIRE(test_vector.back() == 98);
     }
 
     SECTION("assign(n, elem)")
