@@ -91,7 +91,7 @@ TEST_CASE("Constructors", "[create]")
         REQUIRE(test_vector_a[5] == 12);
     }
 
-    SECTION("initializer_list constuctor")
+    SECTION("initializer_list constructors")
     {
         atl::vector<int> test_vector = {10, 12, 13, 199821};
         REQUIRE(test_vector[0] == 10);
