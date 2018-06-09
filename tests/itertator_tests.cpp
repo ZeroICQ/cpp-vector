@@ -30,6 +30,7 @@ TEST_CASE("Check STL requirements")
         REQUIRE(std::is_copy_constructible<TestVectorT>::value);
     }
 
+
     SECTION("is destructible")
     {
         REQUIRE(std::is_destructible<TestVectorT>::value);

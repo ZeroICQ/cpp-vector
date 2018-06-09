@@ -424,6 +424,7 @@ void vector<T, Allocator>::emplace_back(Args&& ...args)
 template<class T, class Allocator>
 void vector<T, Allocator>::clear() noexcept
 {
+    //TODO: call destructors
     resize(0);
 }
 

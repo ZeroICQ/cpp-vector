@@ -22,11 +22,11 @@ public:
     VectorIterator& operator=(const VectorIterator& rhs);
 
     VectorIterator& operator++(); //prefix increment
-    VectorIterator operator++(int); //postfix increment
+    const VectorIterator operator++(int); //postfix increment
 
     VectorIterator& operator--(); //prefix decrement
-    //ASK: whats wrong
-    VectorIterator operator--(int); //postfix decrement
+    //ASK: why const?
+    const VectorIterator operator--(int); //postfix decrement
 
     reference operator*() const;
     pointer operator->();
@@ -102,7 +102,7 @@ VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator++()
 }
 
 template<class T, bool is_const>
-VectorIterator<T, is_const> VectorIterator<T, is_const>::operator++(int)
+const VectorIterator<T, is_const> VectorIterator<T, is_const>::operator++(int)
 {
     VectorIterator<T, is_const> tmp(*this); //copy
     operator++();
@@ -117,7 +117,7 @@ VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator--()
 }
 
 template<class T, bool is_const>
-VectorIterator<T, is_const> VectorIterator<T, is_const>::operator--(int)
+const VectorIterator<T, is_const> VectorIterator<T, is_const>::operator--(int)
 {
     VectorIterator<T, is_const> tmp(*this); //copy
     operator--();
