@@ -103,12 +103,12 @@ public:
     const_iterator          cend() noexcept;
     const_reverse_iterator  crbegin() const noexcept;
     const_reverse_iterator  crend() const noexcept;
-//
+
     // capacity:
     size_type size() const noexcept;
     size_type max_size() const noexcept;
-    void      resize(size_type sz);
-    void      resize(size_type sz, const T& elem);
+    void      resize(size_type new_size);
+    void      resize(size_type new_size, const T& elem);
     size_type capacity() const noexcept;
     bool      empty() const noexcept;
     void      reserve(size_type capacity);
@@ -160,15 +160,17 @@ private:
     size_type size_;
     size_type capacity_;
 
-    void initialize_default();
+    void initialize_default(size_type from = 0);
     void reserve_for_push();
     void move_to_another_ptr(pointer);
 
     void copy_from_another_vector(const vector<T>& other);
 
     template<class It, class = typename std::iterator_traits<It>::iterator_category>
-    void fill_with_iterator(It first, It last);
+    void fill_from_iterator(It first, It last);
     void deallocate_data();
+
+    void destruct_data(size_type from = 0);
 };
 
 
@@ -263,7 +265,7 @@ vector<T, Allocator>::vector(std::initializer_list<T> ilist, const Allocator& al
           size_(ilist.size()),
           capacity_(ilist.size())
 {
-    fill_with_iterator(ilist.begin(), ilist.end());
+    fill_from_iterator(ilist.begin(), ilist.end());
 }
 
 template<class T, class Allocator>
@@ -273,9 +275,9 @@ vector<T, Allocator>::~vector()
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::initialize_default()
+void vector<T, Allocator>::initialize_default(size_type from)
 {
-    for (size_type i = 0; i < size_; i++) {
+    for (size_type i = from; i < capacity_; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, data_ + i);
     }
 }
@@ -380,6 +382,8 @@ template<class T, class Allocator>
 void vector<T, Allocator>::push_back(const T& elem)
 {
     reserve_for_push();
+    //ASK: whats the point to have default-initialized elements after size_?
+    std::allocator_traits<Allocator>::destroy(allocator_, data_ + size_);
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<const T&>(elem));
     size_++;
 }
@@ -393,42 +397,33 @@ void vector<T, Allocator>::push_back(T&& elem)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz)
+void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size)
 {
-    auto new_capacity = std::max(sz, MIN_CAPACITY);
+    auto new_capacity = std::max(new_size, MIN_CAPACITY);
 
-    if (sz < size_) {
-        for (auto i = sz; i < size_; i++) {
-            std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
-        }
-
-        size_ = sz;
+    if (new_size < size_) {
+        destruct_data(new_size);
+        initialize_default(new_size);
+        size_ = new_size;
         return;
     }
-
+    //don't touch. order is critical
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
-
     move_to_another_ptr(new_data);
-    for (size_type i = capacity_; i < new_capacity; i++) {
-        std::allocator_traits<Allocator>::construct(allocator_, new_data + i);
-    }
-
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
     data_ = new_data;
     capacity_ = new_capacity;
+    initialize_default(size_);
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz, const T& elem)
+void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size, const T& elem)
 {
-    //TODO: remove copypaste
-    auto new_capacity = std::max(sz, MIN_CAPACITY);
-    if (sz < size_) {
-        for (auto i = sz; sz < size_; i++) {
-            std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
-        }
-
-        size_ = sz;
+    auto new_capacity = std::max(new_size, MIN_CAPACITY);
+    if (new_size < size_) {
+        destruct_data(new_size);
+        initialize_default(new_size);
+        size_ = new_size;
         return;
     }
 
@@ -444,7 +439,6 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz, c
     capacity_ = new_capacity;
 }
 
-
 template<class T, class Allocator>
 void vector<T, Allocator>::reserve(vector<T, Allocator>::size_type capacity)
 {
@@ -457,14 +451,17 @@ void vector<T, Allocator>::reserve(vector<T, Allocator>::size_type capacity)
 template<class T, class Allocator>
 void vector<T, Allocator>::reserve_for_push()
 {
-    if (capacity_ - size_ > 0) {
+    if (capacity_  > size_) {
         return;
     }
     //small kostyl
+    size_type new_capacity;
     if (capacity_ == 0) {
         capacity_ = MIN_CAPACITY;
+    } else {
+        new_capacity = static_cast<size_type>(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
     }
-    auto new_capacity = static_cast<size_type >(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
+
     reserve(new_capacity);
 }
 
@@ -612,7 +609,7 @@ void vector<T, Allocator>::assign(InputIterator first, InputIterator last)
     auto size = static_cast<size_type>(std::distance(first, last));
     reserve(size);
 
-    fill_with_iterator(first, last);
+    fill_from_iterator(first, last);
     size_ = size;
 }
 
@@ -624,7 +621,7 @@ void vector<T, Allocator>::assign(std::initializer_list<T> init_list)
 
 template<class T, class Allocator>
 template<class It, class>
-void vector<T, Allocator>::fill_with_iterator(It first, It last)
+void vector<T, Allocator>::fill_from_iterator(It first, It last)
 {
     size_type i =  0;
     for (auto it = first; it != last; it++, i++) {
@@ -674,6 +671,14 @@ vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> i
 {
     assign(std::move(ilist));
     return *this;
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::destruct_data(size_type from)
+{
+    for (size_type i = from; i < capacity_; i++) {
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
+    }
 }
 
 } //namespace atl

@@ -154,18 +154,36 @@ TEST_CASE("Access", "[access]")
     }
 }
 
-TEST_CASE("Resize", "[access]")
+TEST_CASE("Modify", "[modify]")
 {
-    SECTION(".reserve")
+//    SECTION(".reserve")
+//    {
+//        atl::vector<NotIntegralType> test_vector(10);
+//        REQUIRE(test_vector.capacity() == 10);
+//
+//        test_vector.reserve(100);
+//        REQUIRE(test_vector.capacity() == 100);
+//
+//        test_vector.reserve(10);
+//        REQUIRE(test_vector.capacity() == 100);
+//    }
+
+    SECTION("resize")
     {
-        atl::vector<NotIntegralType> test_vector(10);
-        REQUIRE(test_vector.capacity() == 10);
+        atl::vector<int> test_vector = {10, 45};
+        REQUIRE(test_vector.size() == 2);
 
-        test_vector.reserve(100);
-        REQUIRE(test_vector.capacity() == 100);
+        test_vector.resize(0);
+        REQUIRE(test_vector.size() == 0);
+        REQUIRE(test_vector.capacity() == 2);
 
-        test_vector.reserve(10);
-        REQUIRE(test_vector.capacity() == 100);
+        test_vector.resize(15, 98);
+        REQUIRE(test_vector.size() == 0);
+        REQUIRE(test_vector.capacity() == 15);
+
+        for (auto& val : test_vector) {
+            REQUIRE(val == 98);
+        }
     }
 }
 
