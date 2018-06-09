@@ -220,4 +220,14 @@ TEST_CASE("Operators")
         REQUIRE_FALSE(is_same(test_vector_a, test_vector_b));
 
     }
+
+    SECTION(" = initializer_list")
+    {
+        atl::vector<std::string> test_vector = {"kek", "mek", "rek"};
+        test_vector = {"rofl", "memes"};
+
+        REQUIRE(test_vector.size() == 2);
+        REQUIRE(test_vector[0] == "rofl");
+        REQUIRE(test_vector[1] == "memes");
+    }
 }

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "vector_iterator.h"
 #include <initializer_list>
-#include <iostream>
 
 //Alexey template library
 namespace atl {
@@ -80,7 +79,8 @@ public:
     vector<T,Allocator>& operator=(const vector<T,Allocator>& rhs);
     //ASK: why move operators should be noexcept?
     vector<T,Allocator>& operator=(vector<T,Allocator>&& rhs) noexcept;
-//    vector& operator=(initializer_list<T>);
+    vector& operator=(std::initializer_list<T>);
+
     template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
     void assign(InputIterator first, InputIterator last);
 
@@ -618,6 +618,13 @@ void vector<T, Allocator>::deallocate_data()
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> ilist)
+{
+    assign(std::move(ilist));
+    return *this;
 }
 
 
