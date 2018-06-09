@@ -1,6 +1,21 @@
 #include "catch.hpp"
 #include "vector.h"
 
+template <class T>
+bool is_same(const atl::vector<T>& a, const std::vector<T>& s)
+{
+    if (s.size() != a.size()) {
+        return false;
+    }
+
+    for (typename atl::vector<T>::size_type i = 0; i < a.size(); i++) {
+        if (a[i] != s[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 class NotIntegralType
 {
@@ -23,9 +38,9 @@ private:
     int* large_field_b;
 };
 
-TEST_CASE("Vector create", "[create]")
+TEST_CASE("Constructors", "[create]")
 {
-    SECTION("Constructors")
+    SECTION("vector(size_type n)")
     {
         atl::vector<double> test_vector(500);
         REQUIRE(test_vector.capacity() == 500);
@@ -33,31 +48,78 @@ TEST_CASE("Vector create", "[create]")
         REQUIRE_FALSE(test_vector.empty());
     }
 
-    SECTION("Empty vector")
+    SECTION("vector(size_type 0)")
     {
         atl::vector<bool> test_vector(0);
         REQUIRE(test_vector.capacity() == 0);
         REQUIRE(test_vector.size() == 0);
+        REQUIRE(test_vector.empty());
+    }
+
+    SECTION("Iterators")
+    {
+        std::vector<int> std_vec = {0, 10, 132, 228};
+        atl::vector<int> test_vec(std_vec.begin(), std_vec.end());
+        REQUIRE(test_vec.capacity() == std_vec.size());
+
+        REQUIRE(is_same(test_vec, std_vec));
     }
 }
 
 
 TEST_CASE("Access", "[access]")
 {
-    atl::vector<int> test_vector(10);
-
     SECTION(".at(pos)")
     {
+        atl::vector<int> test_vector(10);
         int val = test_vector.at(5);
         REQUIRE(val == 0);
         REQUIRE_THROWS_AS(test_vector.at(11), std::out_of_range);
         REQUIRE_THROWS_AS(test_vector.at(-1), std::out_of_range);
     }
+
+    SECTION("assign(n, elem)")
+    {
+        atl::vector<int> test_vector(10, 8);
+
+        test_vector.assign(11, 272);
+
+        REQUIRE(test_vector.size() == 11);
+        REQUIRE(test_vector.capacity() == 11);
+
+        for (auto& val : test_vector) {
+            REQUIRE(val == 272);
+        }
+
+    }
+
+    SECTION("assign Iterators")
+    {
+        atl::vector<int> test_vector(10, 8);
+        std::vector<int> std_vector = {8, 9, 10, 11, 12, 78099090, -288};
+
+        test_vector.assign(std_vector.begin(), std_vector.end());
+
+        REQUIRE(test_vector.size() == std_vector.size());
+
+        REQUIRE(is_same(test_vector, std_vector));
+
+    }
+
+    SECTION("assign initializer_list")
+    {
+        atl::vector<int> test_vector(10, 8);
+        test_vector.assign({100, 200});
+
+        REQUIRE(test_vector[0] == 100);
+        REQUIRE(test_vector[1] == 200);
+
+    }
 }
 
 TEST_CASE("Resize", "[access]")
 {
-    SECTION(".reserve(50)")
+    SECTION(".reserve")
     {
         atl::vector<NotIntegralType> test_vector(10);
         REQUIRE(test_vector.capacity() == 10);
@@ -103,3 +165,4 @@ TEST_CASE("Pushback", "[access][modify]")
     }
 
 }
+

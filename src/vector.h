@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include "vector_iterator.h"
+#include <initializer_list>
 
 //Alexey template library
 namespace atl {
@@ -53,16 +54,15 @@ public:
     using const_pointer                                = typename std::allocator_traits<Allocator>::const_pointer;
     using iterator                                     = VectorIterator<T, false>;
     using const_iterator                               = VectorIterator<T, true>;
-
-//    typedef std::reverse_iterator<iterator>           reverse_iterator;
-//    typedef std::reverse_iterator<const_iterator>     const_reverse_iterator;
+    using reverse_iterator                             = std::reverse_iterator<iterator>;
+    using const_reverse_iterator                       = std::reverse_iterator<const_iterator>;
 
     // construct/copy/destroy:
     explicit vector(const Allocator& alloc = Allocator());
     explicit vector(size_type size);
-    vector(size_type size, const T& value,const Allocator& = Allocator());
-//    template <class InputIterator>
-//    vector(InputIterator first, InputIterator last,const Allocator& = Allocator());
+    vector(size_type size, const T& value, const Allocator& = Allocator());
+    template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
+    vector(InputIterator first, InputIterator last,const Allocator& = Allocator());
 //    vector(const vector<T,Allocator>& x);
 //    vector(vector&&);
 //    vector(const vector&, const Allocator&);
@@ -73,10 +73,11 @@ public:
 //    vector<T,Allocator>& operator=(const vector<T,Allocator>& x);
 //    vector<T,Allocator>& operator=(vector<T,Allocator>&& x);
 //    vector& operator=(initializer_list<T>);
-//    template <class InputIterator>
-//    void assign(InputIterator first, InputIterator last);
-//    void assign(size_type n, const T& t);
-//    void assign(initializer_list<T>);
+    template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
+    void assign(InputIterator first, InputIterator last);
+
+    void assign(size_type n, const T& elem);
+    void assign(std::initializer_list<T>);
     allocator_type get_allocator() const noexcept;
 
     // iterators:
@@ -141,7 +142,10 @@ public:
 
 private:
     static constexpr double     INCREASE_CAPACITY_FACTOR = 1.5;
-    static constexpr size_type  MIN_CAPACITY             = 10;
+    const  size_type            MIN_CAPACITY             = 10;
+
+    //ASK:???
+//    static constexpr size_type  MIN_CAPACITY             = 10;
 
     Allocator allocator_;
     pointer data_;
@@ -181,6 +185,20 @@ vector<T, Allocator>::vector(vector::size_type size, const T& value, const Alloc
     //TODO: rmk with iterators
     for (size_type i = 0; i < size_; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, data_ + i, std::forward<const T&>(value));
+    }
+}
+
+template<class T, class Allocator>
+template<class InputIterator, class>
+vector<T, Allocator>::vector(InputIterator first, InputIterator last, const Allocator& alloc)
+         : allocator_(alloc),
+           data_(std::allocator_traits<Allocator>::allocate(allocator_, std::distance(first, last))),
+           size_(static_cast<size_type >(std::distance(first, last))),
+           capacity_(size_)
+{
+    int i = 0;
+    for (auto it = first; it != last; it++, i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, *it);
     }
 }
 
@@ -315,10 +333,12 @@ void vector<T, Allocator>::push_back(T&& elem)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::resize(vector::size_type sz)
+void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz)
 {
+    auto new_capacity = std::max(sz, MIN_CAPACITY);
+
     if (sz < size_) {
-        for (auto i = sz; sz < size_; i++) {
+        for (auto i = sz; i < size_; i++) {
             std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
         }
 
@@ -326,22 +346,24 @@ void vector<T, Allocator>::resize(vector::size_type sz)
         return;
     }
 
-    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
+    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
 
     copy_to_another_ptr(new_data);
-    for (size_type i = capacity_; i < sz; i++) {
+    for (size_type i = capacity_; i < new_capacity; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i);
     }
 
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
     data_ = new_data;
-    capacity_ = sz;
+    capacity_ = new_capacity;
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::resize(vector::size_type sz, const T& elem)
+void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type sz, const T& elem)
 {
-    //TODO
+    //TODO: remove copypaste
+
+    auto new_capacity = std::max(sz, MIN_CAPACITY);
     if (sz < size_) {
         for (auto i = sz; sz < size_; i++) {
             std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
@@ -351,16 +373,16 @@ void vector<T, Allocator>::resize(vector::size_type sz, const T& elem)
         return;
     }
 
-    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
+    auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
 
     copy_to_another_ptr(new_data);
-    for (size_type i = capacity_; i < sz; i++) {
+    for (size_type i = capacity_; i < new_capacity; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i, elem);
     }
 
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
     data_ = new_data;
-    capacity_ = sz;
+    capacity_ = new_capacity;
 }
 
 
@@ -387,7 +409,10 @@ void vector<T, Allocator>::reserve_for_push()
 template<class T, class Allocator>
 void vector<T, Allocator>::pop_back()
 {
-    size_ = size_ > 0 ? size_ - 1 : 0;
+    if (size_ > 0) {
+        --size_;
+        std::allocator_traits<Allocator>::destroy(allocator_, data_ + size_);
+    }
 }
 
 template<class T, class Allocator>
@@ -417,7 +442,6 @@ void vector<T, Allocator>::emplace_back(Args&& ...args)
 template<class T, class Allocator>
 void vector<T, Allocator>::clear() noexcept
 {
-    //TODO: call destructors
     resize(0);
 }
 
@@ -443,6 +467,41 @@ template<class T, class Allocator>
 typename vector<T, Allocator>::const_iterator vector<T, Allocator>::end() const noexcept
 {
     return const_iterator(data_, size_, size_);
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::assign(vector::size_type n, const T& elem)
+{
+    clear();
+    reserve(n);
+
+    for (size_type i = 0; i < n; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, elem);
+    }
+
+    size_ = n;
+}
+
+template<class T, class Allocator>
+template<class InputIterator, class>
+void vector<T, Allocator>::assign(InputIterator first, InputIterator last)
+{
+    clear();
+    auto size = static_cast<size_type>(std::distance(first, last));
+    reserve(size);
+
+    size_type i =  0;
+    for (auto it = first; it != last; it++, i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, *it);
+    }
+
+    size_ = size;
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::assign(std::initializer_list<T> init_list)
+{
+    assign(init_list.begin(), init_list.end());
 }
 
 } //namespace atl
