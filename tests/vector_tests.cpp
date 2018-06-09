@@ -282,7 +282,7 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(test_vector[2].getP() == 'c');
     }
 
-    SECTION("pop back")
+    SECTION("pop_back")
     {
         atl::vector<SomeClass> test_vector;
 
