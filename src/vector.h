@@ -605,12 +605,4 @@ void vector<T, Allocator>::deallocate_data()
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
 }
 
-//    : allocator_(std::allocator_traits<Allocator>::select_on_container_copy_construction(other.get_allocator())),
-//    data_(std::allocator_traits<Allocator>::allocate(allocator_, other.capacity_)),
-//    size_(other.size_),
-//    capacity_(other.capacity_)
-//{
-//    copy_from_another_vector(other);
-//}
-
 } //namespace atl
