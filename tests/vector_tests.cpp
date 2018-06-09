@@ -156,17 +156,17 @@ TEST_CASE("Access", "[access]")
 
 TEST_CASE("Modify", "[modify]")
 {
-//    SECTION(".reserve")
-//    {
-//        atl::vector<NotIntegralType> test_vector(10);
-//        REQUIRE(test_vector.capacity() == 10);
-//
-//        test_vector.reserve(100);
-//        REQUIRE(test_vector.capacity() == 100);
-//
-//        test_vector.reserve(10);
-//        REQUIRE(test_vector.capacity() == 100);
-//    }
+    SECTION("reserve")
+    {
+        atl::vector<NotIntegralType> test_vector(10);
+        REQUIRE(test_vector.capacity() == 10);
+
+        test_vector.reserve(100);
+        REQUIRE(test_vector.capacity() == 100);
+
+        test_vector.reserve(10);
+        REQUIRE(test_vector.capacity() == 100);
+    }
 
     SECTION("resize")
     {
