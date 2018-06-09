@@ -83,6 +83,18 @@ TEST_CASE("Constructors", "[create]")
         test_vector_a[4].large_field_a[4] = 128;
         REQUIRE(test_vector_b[4].large_field_a[4] == 127);
     }
+
+    SECTION("initializer_list constuctor")
+    {
+        atl::vector<int> test_vector = {10, 12, 13, 199821};
+        REQUIRE(test_vector[0] == 10);
+        REQUIRE(test_vector[1] == 12);
+        REQUIRE(test_vector[2] == 13);
+        REQUIRE(test_vector[3] == 199821);
+
+        REQUIRE(test_vector.size() == 4);
+        REQUIRE(test_vector.capacity() == 4);
+    }
 }
 
 TEST_CASE("Access", "[access]")

@@ -70,7 +70,8 @@ public:
 
 //    vector(vector&&);
 //    vector(vector&&, const Allocator&);
-//    vector(initializer_list<T>, const Allocator& = Allocator());
+
+    vector(std::initializer_list<T>, const Allocator& = Allocator());
 //
     ~vector();
 //    vector<T,Allocator>& operator=(const vector<T,Allocator>& x);
@@ -158,6 +159,11 @@ private:
     void initialize_default();
     void reserve_for_push();
     void copy_to_another_ptr(pointer);
+
+    void copy_from_another_vector(const vector<T>& other);
+
+    template<class It, class = typename std::iterator_traits<It>::iterator_category>
+    void fill_with_iterator(It first, It last);
 };
 
 
@@ -185,7 +191,6 @@ vector<T, Allocator>::vector(vector::size_type size, const T& value, const Alloc
             size_(size),
             capacity_(size)
 {
-    //TODO: rmk with iterators
     for (size_type i = 0; i < size_; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, data_ + i, std::forward<const T&>(value));
     }
@@ -212,11 +217,7 @@ vector<T, Allocator>::vector(const vector<T, Allocator>& other)
        size_(other.size_),
        capacity_(other.capacity_)
 {
-    int i = 0;
-    for (const auto& val : other) {
-        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, val);//copy
-        ++i;
-    }
+    copy_from_another_vector(other);
 }
 
 template<class T, class Allocator>
@@ -226,12 +227,17 @@ vector<T, Allocator>::vector(const vector& other, const Allocator& alloc)
       size_(other.size_),
       capacity_(other.capacity_)
 {
-    //TODO: copypaste
-    int i = 0;
-    for (const auto& val : other) {
-        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, val);//copy
-        ++i;
-    }
+    copy_from_another_vector(other);
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(std::initializer_list<T> ilist, const Allocator& alloc)
+        : allocator_(alloc),
+          data_(std::allocator_traits<Allocator>::allocate(allocator_, ilist.size())),
+          size_(ilist.size()),
+          capacity_(ilist.size())
+{
+    fill_with_iterator(ilist.begin(), ilist.end());
 }
 
 template<class T, class Allocator>
@@ -432,7 +438,10 @@ void vector<T, Allocator>::reserve_for_push()
     if (capacity_ - size_ > 0) {
         return;
     }
-
+    //small kostyl
+    if (capacity_ == 0) {
+        capacity_ = MIN_CAPACITY;
+    }
     auto new_capacity = static_cast<size_type >(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
     reserve(new_capacity);
 }
@@ -454,6 +463,17 @@ void vector<T, Allocator>::copy_to_another_ptr(vector::pointer new_data)
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
 }
+
+template<class T, class Allocator>
+void vector<T, Allocator>::copy_from_another_vector(const vector<T>& other)
+{
+    int i = 0;
+    for (const auto& val : other) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, val);//copy
+        ++i;
+    }
+}
+
 
 template<class T, class Allocator>
 void vector<T, Allocator>::shrink_to_fit()
@@ -521,11 +541,7 @@ void vector<T, Allocator>::assign(InputIterator first, InputIterator last)
     auto size = static_cast<size_type>(std::distance(first, last));
     reserve(size);
 
-    size_type i =  0;
-    for (auto it = first; it != last; it++, i++) {
-        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, *it);
-    }
-
+    fill_with_iterator(first, last);
     size_ = size;
 }
 
@@ -533,6 +549,16 @@ template<class T, class Allocator>
 void vector<T, Allocator>::assign(std::initializer_list<T> init_list)
 {
     assign(init_list.begin(), init_list.end());
+}
+
+template<class T, class Allocator>
+template<class It, class>
+void vector<T, Allocator>::fill_with_iterator(It first, It last)
+{
+    size_type i =  0;
+    for (auto it = first; it != last; it++, i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, *it);
+    }
 }
 
 } //namespace atl
