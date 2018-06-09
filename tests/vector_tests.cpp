@@ -19,6 +19,17 @@ bool is_same(const T& a, const U& s)
     return true;
 }
 
+class SomeClass
+{
+public:
+    SomeClass(char p) :p_(p) {}
+    SomeClass() :p_('k') {}
+    char getP() { return p_; }
+private:
+    char p_;
+};
+
+
 class NotIntegralType
 {
 public:
@@ -260,16 +271,6 @@ TEST_CASE("Modify", "[modify]")
 
     SECTION("emplace_back")
     {
-        class SomeClass
-        {
-                public:
-                SomeClass(char p) :p_(p) {}
-                SomeClass() :p_('k') {}
-                char getP() { return p_; }
-                private:
-                char p_;
-        };
-
         atl::vector<SomeClass> test_vector;
 
         test_vector.emplace_back('a');
@@ -279,6 +280,22 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(test_vector[0].getP() == 'a');
         REQUIRE(test_vector[1].getP() == 'b');
         REQUIRE(test_vector[2].getP() == 'c');
+    }
+
+    SECTION("pop back")
+    {
+        atl::vector<SomeClass> test_vector;
+
+        test_vector.emplace_back('a');
+        test_vector.emplace_back('b');
+        test_vector.emplace_back('c');
+
+        test_vector.pop_back();
+        test_vector.pop_back();
+
+        REQUIRE(test_vector.size() == 1);
+        REQUIRE(test_vector.capacity() == 10);
+        REQUIRE(test_vector.front().getP() == 'a');
     }
 }
 
