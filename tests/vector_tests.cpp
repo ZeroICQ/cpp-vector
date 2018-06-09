@@ -233,11 +233,8 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(test_vector.size() == 12);
         REQUIRE(test_vector.capacity() == 12);
     }
-}
 
-TEST_CASE("Pushback", "[access][modify]")
-{
-    SECTION("pushback")
+    SECTION("push_back")
     {
         atl::vector<int> test_vector;
         test_vector.push_back(5);
@@ -259,12 +256,6 @@ TEST_CASE("Pushback", "[access][modify]")
         {
             REQUIRE(test_vector[i] == i-2);
         }
-
-        test_vector.resize(500, 9);
-
-        test_vector.emplace_back(2);
-        REQUIRE(test_vector.back() == 2);
-
     }
 }
 

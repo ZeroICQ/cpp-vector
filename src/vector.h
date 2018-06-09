@@ -366,13 +366,13 @@ typename vector<T, Allocator>::const_reference vector<T, Allocator>::back() cons
 }
 
 template<class T, class Allocator>
-T* vector<T, Allocator>::data() noexcept
+typename vector<T, Allocator>::pointer vector<T, Allocator>::data() noexcept
 {
     return data_;
 }
 
 template<class T, class Allocator>
-const T* vector<T, Allocator>::data() const noexcept
+typename vector<T, Allocator>::const_pointer vector<T, Allocator>::data() const noexcept
 {
     return data_;
 }
