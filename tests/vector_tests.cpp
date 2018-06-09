@@ -8,8 +8,9 @@ public:
     NotIntegralType() : large_field_a(new int[100]), large_field_b(new int[100]) {}
     NotIntegralType(NotIntegralType&& a) {
         large_field_a = a.large_field_a;
+        large_field_b = a.large_field_b;
         a.large_field_a = nullptr;
-        large_field_b = new int[10];
+        a.large_field_b = nullptr;
     }
 
     ~NotIntegralType() {

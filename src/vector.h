@@ -4,6 +4,7 @@
 #include <cmath>
 #include <utility>
 #include <iterator>
+#include <algorithm>
 #include "vector_iterator.h"
 
 //Alexey template library
@@ -148,7 +149,7 @@ private:
     size_type capacity_;
 
     void initialize_default();
-    void reserve_scale();
+    void reserve_for_push();
     void copy_to_another_ptr(pointer);
 };
 
@@ -187,7 +188,7 @@ vector<T, Allocator>::vector(vector::size_type size, const T& value, const Alloc
 template<class T, class Allocator>
 vector<T, Allocator>::~vector()
 {
-    for (size_type i = 0; i < size_; i++) {
+    for (size_type i = 0; i < capacity_; i++) {
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
@@ -221,7 +222,8 @@ typename vector<T, Allocator>::size_type vector<T, Allocator>::capacity() const 
 template<class T, class Allocator>
 bool vector<T, Allocator>::empty() const noexcept
 {
-    return size_ == 0;
+
+    return begin() ==  end();
 }
 
 template<class T, class Allocator>
@@ -299,7 +301,7 @@ const T* vector<T, Allocator>::data() const noexcept
 template<class T, class Allocator>
 void vector<T, Allocator>::push_back(const T& elem)
 {
-    reserve_scale();
+    reserve_for_push();
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<const T&>(elem));
     size_++;
 }
@@ -307,7 +309,7 @@ void vector<T, Allocator>::push_back(const T& elem)
 template<class T, class Allocator>
 void vector<T, Allocator>::push_back(T&& elem)
 {
-    reserve_scale();
+    reserve_for_push();
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<T&&>(elem));
     size_++;
 }
@@ -326,16 +328,12 @@ void vector<T, Allocator>::resize(vector::size_type sz)
 
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
 
-    //TODO: remake with iterators
-    //and apply algorithm::move
     copy_to_another_ptr(new_data);
-
     for (size_type i = capacity_; i < sz; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i);
     }
 
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
-
     data_ = new_data;
     capacity_ = sz;
 }
@@ -355,16 +353,12 @@ void vector<T, Allocator>::resize(vector::size_type sz, const T& elem)
 
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, sz);
 
-    //TODO: remake with iterators
-    //and apply algorithm::move
     copy_to_another_ptr(new_data);
-
     for (size_type i = capacity_; i < sz; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i, elem);
     }
 
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
-
     data_ = new_data;
     capacity_ = sz;
 }
@@ -380,14 +374,13 @@ void vector<T, Allocator>::reserve(vector::size_type capacity)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::reserve_scale()
+void vector<T, Allocator>::reserve_for_push()
 {
     if (capacity_ - size_ > 0) {
         return;
     }
 
     auto new_capacity = static_cast<size_type >(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
-
     reserve(new_capacity);
 }
 
@@ -416,7 +409,7 @@ template<class T, class Allocator>
 template<class... Args>
 void vector<T, Allocator>::emplace_back(Args&& ...args)
 {
-    reserve_scale();
+    reserve_for_push();
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<Args&&>(args)...);
     size_++;
 }
@@ -437,7 +430,7 @@ typename vector<T,Allocator>::iterator vector<T, Allocator>::begin() noexcept
 template<class T, class Allocator>
 typename vector<T, Allocator>::const_iterator vector<T, Allocator>::begin() const noexcept
 {
-    return iterator(data_, size_);
+    return const_iterator(data_, size_);
 }
 
 template<class T, class Allocator>
@@ -449,7 +442,7 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::end() noexcept
 template<class T, class Allocator>
 typename vector<T, Allocator>::const_iterator vector<T, Allocator>::end() const noexcept
 {
-    return iterator(data_, size_, size_);
+    return const_iterator(data_, size_, size_);
 }
 
 } //namespace atl
