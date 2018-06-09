@@ -44,19 +44,19 @@ template <class T, class Allocator>
 class vector {
 public:
     // types:
-    using value_type                                   = T;
-    using reference                                    = value_type&;
-    using const_reference                              = const value_type&;
-    using size_type                                    = std::size_t;
-    using difference_type                              = std::ptrdiff_t ;
+    using value_type             = T;
+    using reference              = value_type&;
+    using const_reference        = const value_type&;
+    using size_type              = std::size_t;
+    using difference_type        = std::ptrdiff_t ;
 
-    using allocator_type                               = Allocator;
-    using pointer                                      = typename std::allocator_traits<Allocator>::pointer;
-    using const_pointer                                = typename std::allocator_traits<Allocator>::const_pointer;
-    using iterator                                     = VectorIterator<T, false>;
-    using const_iterator                               = VectorIterator<T, true>;
-    using reverse_iterator                             = std::reverse_iterator<iterator>;
-    using const_reverse_iterator                       = std::reverse_iterator<const_iterator>;
+    using allocator_type         = Allocator;
+    using pointer                = typename std::allocator_traits<Allocator>::pointer;
+    using const_pointer          = typename std::allocator_traits<Allocator>::const_pointer;
+    using iterator               = VectorIterator<T, false>;
+    using const_iterator         = VectorIterator<T, true>;
+    using reverse_iterator       = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     // construct/copy/destroy:
     explicit vector(const Allocator& alloc = Allocator());
@@ -75,9 +75,11 @@ public:
     vector(std::initializer_list<T>, const Allocator& = Allocator());
     //Destructor
     ~vector();
+
     //operators
     vector<T,Allocator>& operator=(const vector<T,Allocator>& rhs);
-//    vector<T,Allocator>& operator=(vector<T,Allocator>&& x);
+    //ASK: why move operators should be noexcept?
+    vector<T,Allocator>& operator=(vector<T,Allocator>&& rhs) noexcept;
 //    vector& operator=(initializer_list<T>);
     template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
     void assign(InputIterator first, InputIterator last);
@@ -89,8 +91,8 @@ public:
     // iterators:
     iterator                begin() noexcept;
     const_iterator          begin() const noexcept;
-    iterator                end() noexcept;
-    const_iterator          end() const noexcept;
+    iterator                end()   noexcept;
+    const_iterator          end()   const noexcept;
 //
 //    reverse_iterator        rbegin() noexcept;
 //    const_reverse_iterator  rbegin() const noexcept;
@@ -586,11 +588,24 @@ vector<T, Allocator>& vector<T, Allocator>::operator=(const vector<T, Allocator>
 {
     deallocate_data();
     allocator_ = rhs.allocator_;
-    capacity_ = rhs.capacity_;
-    size_ = rhs.size_;
+    capacity_  = rhs.capacity_;
+    size_      = rhs.size_;
 
     data_ = std::allocator_traits<Allocator>::allocate(allocator_, capacity_);
     copy_from_another_vector(rhs);
+
+    return *this;
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>& vector<T, Allocator>::operator=(vector<T, Allocator>&& rhs) noexcept
+{
+    deallocate_data();
+    allocator_ = std::move(rhs.allocator_);
+    capacity_  = rhs.capacity_;
+    size_      = rhs.size_;
+
+    data_ = std::move(rhs.data_);
 
     return *this;
 }
@@ -604,5 +619,6 @@ void vector<T, Allocator>::deallocate_data()
     }
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
 }
+
 
 } //namespace atl
