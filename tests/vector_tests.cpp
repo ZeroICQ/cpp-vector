@@ -84,6 +84,13 @@ TEST_CASE("Constructors", "[create]")
         REQUIRE(test_vector_b[4].large_field_a[4] == 127);
     }
 
+    SECTION("move constructor")
+    {
+        //todo: write a better test
+        atl::vector<int> test_vector_a(atl::vector<int>(15, 12));
+        REQUIRE(test_vector_a[5] == 12);
+    }
+
     SECTION("initializer_list constuctor")
     {
         atl::vector<int> test_vector = {10, 12, 13, 199821};

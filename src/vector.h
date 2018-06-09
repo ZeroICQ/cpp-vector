@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "vector_iterator.h"
 #include <initializer_list>
+#include <iostream>
 
 //Alexey template library
 namespace atl {
@@ -67,9 +68,9 @@ public:
     //copy constructors
     vector(const vector<T,Allocator>& other);
     vector(const vector&, const Allocator&);
-
-//    vector(vector&&);
-//    vector(vector&&, const Allocator&);
+    //move constructors
+    vector(vector&&) noexcept ;
+    vector(vector&&, const Allocator&);
 
     vector(std::initializer_list<T>, const Allocator& = Allocator());
 //
@@ -227,7 +228,28 @@ vector<T, Allocator>::vector(const vector& other, const Allocator& alloc)
       size_(other.size_),
       capacity_(other.capacity_)
 {
+
     copy_from_another_vector(other);
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(vector&& other) noexcept
+        :  allocator_(Allocator()),
+           data_(std::allocator_traits<Allocator>::allocate(allocator_, other.capacity_)),
+           size_(other.size_),
+           capacity_(other.capacity_)
+{
+    other.data_ = nullptr;
+}
+
+template<class T, class Allocator>
+vector<T, Allocator>::vector(vector&& other, const Allocator& alloc)
+     :  allocator_(alloc),
+        data_(std::allocator_traits<Allocator>::allocate(allocator_, other.capacity_)),
+        size_(other.size_),
+        capacity_(other.capacity_)
+{
+    other.data_ = nullptr;
 }
 
 template<class T, class Allocator>
