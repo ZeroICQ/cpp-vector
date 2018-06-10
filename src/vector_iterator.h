@@ -19,13 +19,14 @@ public:
 
     VectorIterator() = delete;
     VectorIterator(const VectorIterator& other) : VectorIterator(other.start_ptr_, other.size_, other.pos_) {}
+    //cast
+    explicit operator VectorIterator<T, true>() const;
     VectorIterator& operator=(const VectorIterator& rhs);
 
     VectorIterator& operator++(); //prefix increment
     const VectorIterator operator++(int); //postfix increment
 
     VectorIterator& operator--(); //prefix decrement
-    //ASK: why const?
     const VectorIterator operator--(int); //postfix decrement
 
     reference operator*() const;
@@ -72,8 +73,8 @@ public:
     friend bool operator>=(const VectorIterator<U, is_const_u>& lhs, const VectorIterator<F, is_const_f>& rhs);
 
 private:
-    explicit VectorIterator(pointer elem_ptr, difference_type size, difference_type pos = 0)
-            : start_ptr_(elem_ptr), size_(size), pos_(pos) {}
+    explicit VectorIterator(pointer start_ptr, difference_type size, difference_type pos = 0)
+            : start_ptr_(start_ptr), size_(size), pos_(pos) {}
 
     pointer start_ptr_;
     difference_type size_;
@@ -81,6 +82,12 @@ private:
 
     friend vector<T>;
 };
+
+template<class T, bool is_const>
+VectorIterator<T, is_const>::operator VectorIterator<T, true>() const
+{
+    return VectorIterator<T, true>(start_ptr_, size_, pos_);
+}
 
 template<class T, bool is_const>
 VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator=(const VectorIterator& rhs)
