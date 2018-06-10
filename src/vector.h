@@ -145,7 +145,7 @@ public:
 
     iterator erase(const_iterator position);
     iterator erase(const_iterator first, const_iterator last);
-//    void     swap(vector<T,Allocator>&);
+    void     swap(vector<T,Allocator>&);
     void     clear() noexcept;
 
 private:
@@ -569,6 +569,14 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(vector::cons
     size_ -= (last - first);
 
     return iterator(data_, size_, last.pos_ - (last - first));
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::swap(vector<T, Allocator>& other)
+{
+    std::swap(data_, other.data_);
+    std::swap(size_, other.size_);
+    std::swap(capacity_, other.capacity_);
 }
 
 

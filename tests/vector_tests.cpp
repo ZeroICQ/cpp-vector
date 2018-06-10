@@ -447,6 +447,22 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(is_same(test_vector, std_vector));
         REQUIRE(endA == test_vector.end());
     }
+
+    SECTION("swap")
+    {
+        atl::vector<SomeClass> test_vector_a = {'a', 'b', 'c'};
+        atl::vector<SomeClass> test_vector_b = {'z', 'x', 'y'};
+
+        test_vector_a.swap(test_vector_b);
+
+        REQUIRE(test_vector_a[0].getP() == 'z');
+        REQUIRE(test_vector_a[1].getP() == 'x');
+        REQUIRE(test_vector_a[2].getP() == 'y');
+
+        REQUIRE(test_vector_b[0].getP() == 'a');
+        REQUIRE(test_vector_b[1].getP() == 'b');
+        REQUIRE(test_vector_b[2].getP() == 'c');
+    }
 }
 
 TEST_CASE("Operators")
