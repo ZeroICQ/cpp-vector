@@ -526,6 +526,19 @@ TEST_CASE("Operators")
 
         REQUIRE(test_vector_a < test_vector_b);
     }
+
+    SECTION("!=")
+    {
+        atl::vector<std::string> test_vector_a = {"abcd"};
+        atl::vector<std::string> test_vector_b = {"abcd"};
+
+        REQUIRE_FALSE(test_vector_a != test_vector_b);
+
+        test_vector_a = {"abc", "bd"};
+        test_vector_b = {"abcd", "zdas"};
+
+        REQUIRE(test_vector_a != test_vector_b);
+    }
 }
 
 TEST_CASE("Iterators")

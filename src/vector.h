@@ -17,8 +17,6 @@ namespace atl {
 
 //operators
 //template <class T, class Allocator>
-//bool operator!=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
-//template <class T, class Allocator>
 //bool operator> (const vector<T,Allocator>& x,const vector<T,Allocator>& y);
 //template <class T, class Allocator>
 //bool operator>=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
@@ -149,6 +147,9 @@ public:
 
     template <class U, class UAllocator>
     friend bool operator<(const vector<U, UAllocator>& lhs,const vector<U, UAllocator>& rhs);
+
+    template <class U, class UAllocator>
+    friend bool operator!=(const vector<U, UAllocator>& lhs,const vector<U,UAllocator>& rhs);
 
 private:
     static constexpr double     INCREASE_CAPACITY_FACTOR = 1.5;
@@ -881,6 +882,12 @@ bool operator<(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rh
         }
     }
     return lhs.size() < rhs.size();
+}
+
+template<class U, class UAllocator>
+bool operator!=(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs)
+{
+    return !(lhs == rhs);
 }
 
 } //namespace atl
