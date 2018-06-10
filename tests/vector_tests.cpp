@@ -25,6 +25,8 @@ public:
     SomeClass(char p) :p_(p) {}
     SomeClass() :p_('k') {}
     char getP() { return p_; }
+    friend bool operator==(const SomeClass& lhs, const SomeClass& rhs) { return lhs.p_ == rhs.p_;}
+    friend bool operator!=(const SomeClass& lhs, const SomeClass& rhs) { return !(lhs == rhs);}
 private:
     char p_;
 };
@@ -372,6 +374,21 @@ TEST_CASE("Modify", "[modify]")
 
         REQUIRE(test_vector[test_vector.size() - 2].getP() == 'l');
         REQUIRE(test_vector.back().getP() == 'z');
+    }
+
+    SECTION("insert(iterator, iterator)")
+    {
+        atl::vector<SomeClass> test_vector;
+        std::vector<SomeClass> std_vector;
+        std::vector<SomeClass> insert_vector = {'f', 'z', 's', 'q'};
+
+        test_vector = {'k', 'l', 'm'};
+        std_vector = {'k', 'l', 'm'};
+
+        std_vector.insert(std_vector.begin()+1, insert_vector.begin(), insert_vector.end());
+        test_vector.insert(test_vector.begin()+1, insert_vector.begin(), insert_vector.end());
+
+        REQUIRE(is_same(test_vector, std_vector));
     }
 }
 

@@ -138,9 +138,8 @@ public:
     iterator insert(const_iterator position, const T& elem);
     iterator insert(const_iterator position, T&& elem);
     iterator insert(const_iterator position, size_type n, const T& elem);
-//    template <class InputIterator>
-//    iterator insert (const_iterator position, InputIterator first,
-//                     InputIterator last);
+    template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
+    iterator insert (const_iterator position, InputIterator first, InputIterator last);
 //    iterator insert(const_iterator position, initializer_list<T>);
 //
 //    iterator erase(const_iterator position);
@@ -519,6 +518,25 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::con
     size_ += n;
     return iterator(data_, size_, position.pos_);
 }
+
+template<class T, class Allocator>
+template<class InputIterator, class>
+typename vector<T, Allocator>::iterator
+vector<T, Allocator>::insert(vector::const_iterator position, InputIterator first, InputIterator last)
+{
+    size_type size = last - first;
+    shift_right(position, size);
+
+    size_type  i = position.pos_;
+
+    for (auto it = first; it != last;i++, it++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, *it);
+    }
+
+    size_ += size;
+    return iterator(data_, size_, position.pos_);
+}
+
 
 template<class T, class Allocator>
 void vector<T, Allocator>::move_to_another_ptr(vector::pointer new_data)
