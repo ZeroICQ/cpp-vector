@@ -341,6 +341,19 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(test_vector[1].getP() == 'p');
         REQUIRE(test_vector[2].getP() == 'l');
     }
+
+    SECTION("insert(pos, T&& elem)")
+    {
+        atl::vector<SomeClass> test_vector;
+        test_vector.push_back('k');
+        test_vector.push_back('l');
+
+        test_vector.insert(test_vector.end() - 1, SomeClass('p'));
+        REQUIRE(test_vector.size() == 3);
+        REQUIRE(test_vector[0].getP() == 'k');
+        REQUIRE(test_vector[1].getP() == 'p');
+        REQUIRE(test_vector[2].getP() == 'l');
+    }
 }
 
 TEST_CASE("Operators")

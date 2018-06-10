@@ -136,7 +136,7 @@ public:
 
     template <class... Args> iterator emplace(const_iterator position, Args&&... args);
     iterator insert(const_iterator position, const T& elem);
-//    iterator insert(const_iterator position, T&& x);
+    iterator insert(const_iterator position, T&& elem);
 //    iterator insert(const_iterator position, size_type n, const T& x);
 //    template <class InputIterator>
 //    iterator insert (const_iterator position, InputIterator first,
@@ -493,6 +493,15 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::con
 {
     shift_right(position);
     std::allocator_traits<Allocator>::construct(allocator_, data_ + position.pos_, std::forward<const T&>(elem));
+    size_++;
+    return iterator(data_, size_, position.pos_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::const_iterator position, T&& elem)
+{
+    shift_right(position);
+    std::allocator_traits<Allocator>::construct(allocator_, data_ + position.pos_, std::forward<T&&>(elem));
     size_++;
     return iterator(data_, size_, position.pos_);
 }
