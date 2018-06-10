@@ -99,7 +99,6 @@ TEST_CASE("Constructors", "[create]")
 
     SECTION("move constructor")
     {
-        //todo: write a better test
         atl::vector<int> test_vector_a(atl::vector<int>(15, 12));
         REQUIRE(test_vector_a[5] == 12);
     }
@@ -527,6 +526,19 @@ TEST_CASE("Operators")
         REQUIRE(test_vector_a < test_vector_b);
     }
 
+    SECTION("<=")
+    {
+        atl::vector<std::string> test_vector_a = {"abcd"};
+        atl::vector<std::string> test_vector_b = {"abcd"};
+
+        REQUIRE(test_vector_a <= test_vector_b);
+
+        test_vector_a = {"abc", "bd"};
+        test_vector_b = {"abcd", "zdas"};
+
+        REQUIRE(test_vector_a <= test_vector_b);
+    }
+
     SECTION(">")
     {
         atl::vector<std::string> test_vector_a = {"abcd"};
@@ -538,6 +550,19 @@ TEST_CASE("Operators")
         test_vector_b = {"abcd", "zdas"};
 
         REQUIRE(test_vector_b > test_vector_a);
+    }
+
+    SECTION(">=")
+    {
+        atl::vector<std::string> test_vector_a = {"abcd"};
+        atl::vector<std::string> test_vector_b = {"abcd"};
+
+        REQUIRE(test_vector_a >= test_vector_b);
+
+        test_vector_a = {"abc", "bd"};
+        test_vector_b = {"abcd", "zdas"};
+
+        REQUIRE(test_vector_b >= test_vector_a);
     }
 
     SECTION("!=")

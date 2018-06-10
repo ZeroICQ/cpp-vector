@@ -11,26 +11,6 @@
 //Alexey template library
 namespace atl {
 
-//FD
-//template <typename T, bool is_const> class Iterator;
-//template <typename T, typename Allocator = std::allocator<T>> class vector;
-
-//operators
-//template <class T, class Allocator>
-//bool operator>=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
-//template <class T, class Allocator>
-//bool operator<=(const vector<T,Allocator>& x,const vector<T,Allocator>& y);
-//
-//template <class T, class Allocator>
-//void swap(vector<T,Allocator>& x, vector<T,Allocator>& y);
-//
-//template <class Allocator> class vector<bool,Allocator>;
-//
-//// hash support
-//template <class T> struct hash;
-//template <class Allocator> struct hash<vector<bool, Allocator> >;
-
-
 template <class T, class Allocator>
 class vector {
 public:
@@ -144,13 +124,19 @@ public:
     friend bool operator==(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs);
 
     template <class U, class UAllocator>
-    friend bool operator<(const vector<U, UAllocator>& lhs,const vector<U, UAllocator>& rhs);
+    friend bool operator<(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs);
 
     template <class U, class UAllocator>
-    friend bool operator!=(const vector<U, UAllocator>& lhs,const vector<U,UAllocator>& rhs);
+    friend bool operator!=(const vector<U, UAllocator>& lhs, const vector<U,UAllocator>& rhs);
 
     template <class U, class UAllocator>
-    friend bool operator> (const vector<U, UAllocator>& lhs,const vector<U, UAllocator>& rhs);
+    friend bool operator> (const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs);
+
+    template <class U, class UAllocator>
+    friend bool operator>=(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs);
+
+    template <class U, class UAllocator>
+    friend bool operator<=(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs);
 
 private:
     static constexpr double     INCREASE_CAPACITY_FACTOR = 1.5;
@@ -612,7 +598,6 @@ void vector<T, Allocator>::reserve_for_push(vector::difference_type size)
         return;
     }
 
-    //small kostyl
     size_type new_capacity;
 
     if (size == 1) {
@@ -895,6 +880,25 @@ template<class U, class UAllocator>
 bool operator> (const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs)
 {
     return rhs < lhs;
+}
+
+template<class U, class UAllocator>
+bool operator>=(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs)
+{
+    return rhs <= lhs;
+}
+
+template<class U, class UAllocator>
+bool operator<=(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs)
+{
+    auto size = std::min(lhs.size(), rhs.size());
+
+    for (typename vector<U, UAllocator>::size_type i = 0; i < size; i++) {
+        if (lhs[i] < rhs[i]) {
+            return true;
+        }
+    }
+    return lhs.size() == rhs.size();
 }
 
 } //namespace atl
