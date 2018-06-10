@@ -135,7 +135,7 @@ public:
     void pop_back();
 
     template <class... Args> iterator emplace(const_iterator position, Args&&... args);
-//    iterator insert(const_iterator position, const T& x);
+    iterator insert(const_iterator position, const T& elem);
 //    iterator insert(const_iterator position, T&& x);
 //    iterator insert(const_iterator position, size_type n, const T& x);
 //    template <class InputIterator>
@@ -489,6 +489,15 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::emplace(vector::co
 }
 
 template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::const_iterator position, const T& elem)
+{
+    shift_right(position);
+    std::allocator_traits<Allocator>::construct(allocator_, data_ + position.pos_, std::forward<const T&>(elem));
+    size_++;
+    return iterator(data_, size_, position.pos_);
+}
+
+template<class T, class Allocator>
 void vector<T, Allocator>::move_to_another_ptr(vector::pointer new_data)
 {
     for (size_type i = 0; i < size_; i++) {
@@ -729,6 +738,5 @@ void vector<T, Allocator>::shift_right(vector::const_iterator pos)
     }
 
 }
-
 
 } //namespace atl
