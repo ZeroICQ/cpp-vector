@@ -137,7 +137,7 @@ public:
     template <class... Args> iterator emplace(const_iterator position, Args&&... args);
     iterator insert(const_iterator position, const T& elem);
     iterator insert(const_iterator position, T&& elem);
-//    iterator insert(const_iterator position, size_type n, const T& x);
+    iterator insert(const_iterator position, size_type n, const T& elem);
 //    template <class InputIterator>
 //    iterator insert (const_iterator position, InputIterator first,
 //                     InputIterator last);
@@ -161,7 +161,7 @@ private:
     size_type capacity_;
 
     void initialize_default(size_type from = 0);
-    void reserve_for_push();
+    void reserve_for_push(size_type size = 1);
     void move_to_another_ptr(pointer);
 
     void copy_from_another_vector(const vector<T>& other);
@@ -170,7 +170,7 @@ private:
     void fill_from_iterator(It first, It last);
     void deallocate_data();
     void destruct_data(size_type from = 0);
-    void shift_right(const_iterator pos);
+    void shift_right(const_iterator pos, size_type n = 1);
 };
 
 
@@ -507,6 +507,20 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::con
 }
 
 template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::const_iterator position,
+                                                                     vector::size_type n, const T& elem)
+{
+    shift_right(position, n);
+
+    for (size_type i = position.pos_; i < position.pos_ + n; i++) {
+        std::allocator_traits<Allocator>::construct(allocator_, data_ + i, std::forward<const T&>(elem));
+    }
+
+    size_ += n;
+    return iterator(data_, size_, position.pos_);
+}
+
+template<class T, class Allocator>
 void vector<T, Allocator>::move_to_another_ptr(vector::pointer new_data)
 {
     for (size_type i = 0; i < size_; i++) {
@@ -526,18 +540,27 @@ void vector<T, Allocator>::copy_from_another_vector(const vector<T>& other)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::reserve_for_push()
+void vector<T, Allocator>::reserve_for_push(size_type size)
 {
-    if (capacity_  > size_) {
+    auto needed_capacity = size_ + size;
+
+    if (capacity_  > needed_capacity) {
         return;
     }
+
     //small kostyl
     size_type new_capacity;
-    if (capacity_ == 0) {
-        capacity_ = MIN_CAPACITY;
+
+    if (size == 1) {
+        if (capacity_ == 0) {
+            capacity_ = MIN_CAPACITY;
+        } else {
+            new_capacity = static_cast<size_type>(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
+        }
     } else {
-        new_capacity = static_cast<size_type>(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
+        new_capacity = needed_capacity;
     }
+
 
     reserve(new_capacity);
 }
@@ -738,14 +761,14 @@ void vector<T, Allocator>::destruct_data(size_type from)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::shift_right(vector::const_iterator pos)
+void vector<T, Allocator>::shift_right(vector::const_iterator pos, size_type n)
 {
-    reserve_for_push();
-    for (auto it = end(); it != pos; it--) {
-        std::allocator_traits<Allocator>::construct(allocator_, &*it, std::move(*(it-1)));
-        std::allocator_traits<Allocator>::destroy(allocator_, &*(it-1));
-    }
+    reserve_for_push(n);
 
+    for (auto it = end() + n - 1; it != pos + n - 1; it--) {
+        std::allocator_traits<Allocator>::construct(allocator_, &*it, std::move(*(it-n)));
+        std::allocator_traits<Allocator>::destroy(allocator_, &*(it-n));
+    }
 }
 
 } //namespace atl
