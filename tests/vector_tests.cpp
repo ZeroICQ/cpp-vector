@@ -390,6 +390,23 @@ TEST_CASE("Modify", "[modify]")
 
         REQUIRE(is_same(test_vector, std_vector));
     }
+
+    SECTION("insert initlist{}")
+    {
+        atl::vector<SomeClass> test_vector;
+        std::vector<SomeClass> std_vector;
+        std::initializer_list<SomeClass> ilist;
+        ilist = {'f', 'z', 's', 'q'};
+
+        test_vector = {'k', 'l', 'm'};
+        std_vector = {'k', 'l', 'm'};
+
+        std_vector.insert(std_vector.begin()+1, ilist);
+        test_vector.insert(test_vector.begin()+1, ilist);
+
+        REQUIRE(is_same(test_vector, std_vector));
+    }
+
 }
 
 TEST_CASE("Operators")

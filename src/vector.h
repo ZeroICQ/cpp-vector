@@ -140,7 +140,7 @@ public:
     iterator insert(const_iterator position, size_type n, const T& elem);
     template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
     iterator insert (const_iterator position, InputIterator first, InputIterator last);
-//    iterator insert(const_iterator position, initializer_list<T>);
+    iterator insert(const_iterator position, std::initializer_list<T>);
 //
 //    iterator erase(const_iterator position);
 //    iterator erase(const_iterator first, const_iterator last);
@@ -535,6 +535,12 @@ vector<T, Allocator>::insert(vector::const_iterator position, InputIterator firs
 
     size_ += size;
     return iterator(data_, size_, position.pos_);
+}
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::const_iterator position, std::initializer_list<T> ilist)
+{
+    return insert(position, ilist.begin(), ilist.end());
 }
 
 
