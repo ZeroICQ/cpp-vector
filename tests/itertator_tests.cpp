@@ -173,6 +173,11 @@ TEST_CASE("Check STL requirements")
         auto itA = test_vector.begin();
         REQUIRE(itA[40] == 40);
         REQUIRE(itA[11] == 11);
+
+        auto itB = test_vector.begin() + 2;
+        REQUIRE(itB[40] == 42);
+        REQUIRE(itB[11] == 13);
+
     }
 
     SECTION("relational operators")

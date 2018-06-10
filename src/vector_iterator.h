@@ -202,7 +202,7 @@ typename VectorIterator<U, is_const_u>::difference_type operator-(VectorIterator
 template<class T, bool is_const>
 typename VectorIterator<T, is_const>::reference VectorIterator<T, is_const>::operator[](VectorIterator::size_type n) const
 {
-    return *(start_ptr_ + n);
+    return *(start_ptr_ + pos_ + n);
 }
 
 template<class U, bool is_const_u, class F, bool is_const_f>

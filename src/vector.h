@@ -5,8 +5,9 @@
 #include <utility>
 #include <iterator>
 #include <algorithm>
-#include "vector_iterator.h"
 #include <initializer_list>
+#include "vector_iterator.h"
+
 
 //Alexey template library
 namespace atl {
@@ -141,9 +142,9 @@ public:
     template <class InputIterator, class = typename std::iterator_traits<InputIterator>::iterator_category>
     iterator insert (const_iterator position, InputIterator first, InputIterator last);
     iterator insert(const_iterator position, std::initializer_list<T>);
-//
-//    iterator erase(const_iterator position);
-//    iterator erase(const_iterator first, const_iterator last);
+
+    iterator erase(const_iterator position);
+    iterator erase(const_iterator first, const_iterator last);
 //    void     swap(vector<T,Allocator>&);
     void     clear() noexcept;
 
@@ -160,7 +161,7 @@ private:
     size_type capacity_;
 
     void initialize_default(size_type from = 0);
-    void reserve_for_push(size_type size = 1);
+    void reserve_for_push(difference_type size = 1);
     void move_to_another_ptr(pointer);
 
     void copy_from_another_vector(const vector<T>& other);
@@ -169,7 +170,8 @@ private:
     void fill_from_iterator(It first, It last);
     void deallocate_data();
     void destruct_data(size_type from = 0);
-    void shift_right(const_iterator pos, size_type n = 1);
+    void shift_right(const_iterator pos, difference_type distance = 1);
+    void shift_left(const_iterator pos, difference_type distance = 1);
 };
 
 
@@ -543,6 +545,32 @@ typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(vector::con
     return insert(position, ilist.begin(), ilist.end());
 }
 
+template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(vector::const_iterator position)
+{
+    if (empty()) {
+        return iterator(data_, size_, size_);
+    }
+    shift_left(position + 1);
+    size_--;
+
+    return iterator(data_, size_, position.pos_);
+}
+
+
+template<class T, class Allocator>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(vector::const_iterator first, vector::const_iterator last)
+{
+    if (empty()) {
+        return iterator(data_, size_, size_);
+    }
+
+    shift_left(last, last - first);
+    size_ -= (last - first);
+
+    return iterator(data_, size_, last.pos_ - (last - first));
+}
+
 
 template<class T, class Allocator>
 void vector<T, Allocator>::move_to_another_ptr(vector::pointer new_data)
@@ -564,7 +592,7 @@ void vector<T, Allocator>::copy_from_another_vector(const vector<T>& other)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::reserve_for_push(size_type size)
+void vector<T, Allocator>::reserve_for_push(vector::difference_type size)
 {
     auto needed_capacity = size_ + size;
 
@@ -584,7 +612,6 @@ void vector<T, Allocator>::reserve_for_push(size_type size)
     } else {
         new_capacity = needed_capacity;
     }
-
 
     reserve(new_capacity);
 }
@@ -785,13 +812,31 @@ void vector<T, Allocator>::destruct_data(size_type from)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::shift_right(vector::const_iterator pos, size_type n)
+void vector<T, Allocator>::shift_right(vector::const_iterator pos, vector::difference_type distance)
 {
-    reserve_for_push(n);
+    reserve_for_push(distance);
 
-    for (auto it = end() + n - 1; it != pos + n - 1; it--) {
-        std::allocator_traits<Allocator>::construct(allocator_, &*it, std::move(*(it-n)));
-        std::allocator_traits<Allocator>::destroy(allocator_, &*(it-n));
+    for (auto it = end() + distance - 1; it != pos + distance - 1; it--) {
+        std::allocator_traits<Allocator>::construct(allocator_, &*it, std::move(*(it-distance)));
+        std::allocator_traits<Allocator>::destroy(allocator_, &*(it-distance));
+    }
+}
+
+template<class T, class Allocator>
+void vector<T, Allocator>::shift_left(vector::const_iterator pos, vector::difference_type distance)
+{
+    if (distance == 0) {
+        return;
+    }
+
+    for (auto it = pos - distance; it != end() - distance; it++) {
+        std::allocator_traits<Allocator>::destroy(allocator_, &*it);
+        std::allocator_traits<Allocator>::construct(allocator_, &*it, std::move(*(it+distance)));
+        std::allocator_traits<Allocator>::destroy(allocator_, &*(it+distance));
+    }
+
+    for (auto it = end() - distance; it != end(); it++) {
+        std::allocator_traits<Allocator>::destroy(allocator_, &*it);
     }
 }
 

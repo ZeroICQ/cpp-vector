@@ -407,6 +407,46 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(is_same(test_vector, std_vector));
     }
 
+    SECTION("erase(pos)")
+    {
+        atl::vector<SomeClass> test_vector;
+        std::vector<SomeClass> std_vector;
+
+        test_vector = {'k', 'l', 'b', 'r', 'm', 'n'};
+        std_vector = {'k', 'l', 'b', 'r', 'm', 'n'};
+
+        auto a = test_vector.begin() + 2;//b
+        auto b = std_vector.begin() + 2;//b
+
+        for (int i = 0; i < 3; i++) {
+            a = test_vector.erase(a);
+            b = std_vector.erase(b);
+        }
+
+        REQUIRE(is_same(test_vector, std_vector));
+    }
+
+    SECTION("erase(pos)")
+    {
+        atl::vector<SomeClass> test_vector;
+        std::vector<SomeClass> std_vector;
+
+        test_vector = {'k', 'l', 'b', 'r', 'm', 'n', 'j', 'v', 'l'};
+        std_vector = {'k', 'l', 'b', 'r', 'm', 'n', 'j', 'v', 'l'};
+
+        auto itA = test_vector.begin() + 2;//b
+        auto itB = std_vector.begin() + 2;//b
+
+        auto endA = test_vector.erase(itA, itA + 3);
+        auto endB = std_vector.erase(itB, itB + 3);
+        REQUIRE(is_same(test_vector, std_vector));
+
+        endA = test_vector.erase(itA, test_vector.end());
+        endB = std_vector.erase(itB, std_vector.end());
+
+        REQUIRE(is_same(test_vector, std_vector));
+        REQUIRE(endA == test_vector.end());
+    }
 }
 
 TEST_CASE("Operators")
