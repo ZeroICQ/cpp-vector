@@ -8,7 +8,6 @@
 #include <initializer_list>
 #include "vector_iterator.h"
 
-
 //Alexey template library
 namespace atl {
 
@@ -17,8 +16,6 @@ namespace atl {
 //template <typename T, typename Allocator = std::allocator<T>> class vector;
 
 //operators
-//template <class T, class Allocator>
-//    bool operator==(const vector<T,Allocator>& lhs,const vector<T,Allocator>& rhs);
 //template <class T, class Allocator>
 //bool operator< (const vector<T,Allocator>& x,const vector<T,Allocator>& y);
 //template <class T, class Allocator>
@@ -147,6 +144,10 @@ public:
     iterator erase(const_iterator first, const_iterator last);
     void     swap(vector<T,Allocator>&);
     void     clear() noexcept;
+
+    //Operators
+    template <class U, class UAllocator>
+    friend bool operator==(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs);
 
 private:
     static constexpr double     INCREASE_CAPACITY_FACTOR = 1.5;
@@ -846,6 +847,26 @@ void vector<T, Allocator>::shift_left(vector::const_iterator pos, vector::differ
     for (auto it = end() - distance; it != end(); it++) {
         std::allocator_traits<Allocator>::destroy(allocator_, &*it);
     }
+}
+
+
+template<class U, class UAllocator>
+bool operator==(const vector<U, UAllocator>& lhs, const vector<U, UAllocator>& rhs)
+{
+    if (lhs.size_ != rhs.size_) {
+        return false;
+    }
+
+    auto itL = lhs.begin();
+    auto itR = rhs.begin();
+
+    for (;itL != lhs.end(); itL++, itR++) {
+        if (*itL != *itR) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 } //namespace atl

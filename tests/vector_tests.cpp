@@ -492,6 +492,27 @@ TEST_CASE("Operators")
         REQUIRE(test_vector[0] == "rofl");
         REQUIRE(test_vector[1] == "memes");
     }
+
+    SECTION("==")
+    {
+        atl::vector<SomeClass> test_vector_a = {'a', 'b', 'c'};
+        atl::vector<SomeClass> test_vector_b = {'a', 'b', 'c'};
+
+        REQUIRE(test_vector_a == test_vector_b);
+
+        test_vector_a.pop_back();
+        REQUIRE_FALSE(test_vector_a == test_vector_b);
+        test_vector_b.pop_back();
+        REQUIRE(test_vector_a == test_vector_b);
+
+        test_vector_a.clear();
+        test_vector_b.clear();
+        REQUIRE(test_vector_a == test_vector_b);
+
+        test_vector_a.emplace_back('z');
+        test_vector_b.emplace_back('g');
+        REQUIRE_FALSE(test_vector_a == test_vector_b);
+    }
 }
 
 TEST_CASE("Iterators")
