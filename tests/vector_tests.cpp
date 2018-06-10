@@ -297,6 +297,36 @@ TEST_CASE("Modify", "[modify]")
         REQUIRE(test_vector.capacity() == 10);
         REQUIRE(test_vector.front().getP() == 'a');
     }
+
+    SECTION("emplace")
+    {
+        atl::vector<SomeClass> test_vector;
+
+        test_vector.emplace_back('a');
+        test_vector.emplace_back('b');
+        test_vector.emplace_back('c');
+        //also check explicit cast
+        auto cit = static_cast<typename atl::vector<SomeClass>::const_iterator>(test_vector.begin() + 2);
+        test_vector.emplace(cit, 'z');
+
+        auto  it = test_vector.begin() + 2;
+        //implicit cast
+        test_vector.emplace(it, 'o');
+        for (int i= 0; i < 3; i++) {
+             it = test_vector.emplace(it, 'z');
+        }
+
+        REQUIRE(test_vector.size() == 8);
+
+        REQUIRE(test_vector[0].getP() == 'a');
+        REQUIRE(test_vector[1].getP() == 'b');
+        REQUIRE(test_vector[2].getP() == 'z');
+        REQUIRE(test_vector[3].getP() == 'z');
+        REQUIRE(test_vector[4].getP() == 'z');
+        REQUIRE(test_vector[5].getP() == 'o');
+        REQUIRE(test_vector[6].getP() == 'z');
+        REQUIRE(test_vector[7].getP() == 'c');
+    }
 }
 
 TEST_CASE("Operators")

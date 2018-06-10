@@ -133,8 +133,8 @@ public:
     void push_back(const T& elem);
     void push_back(T&& elem);
     void pop_back();
-//TODO:continue
-//    template <class... Args> iterator emplace(const_iterator position, Args&&... args);
+
+    template <class... Args> iterator emplace(const_iterator position, Args&&... args);
 //    iterator insert(const_iterator position, const T& x);
 //    iterator insert(const_iterator position, T&& x);
 //    iterator insert(const_iterator position, size_type n, const T& x);
@@ -169,8 +169,8 @@ private:
     template<class It, class = typename std::iterator_traits<It>::iterator_category>
     void fill_from_iterator(It first, It last);
     void deallocate_data();
-
     void destruct_data(size_type from = 0);
+    void shift_right(const_iterator pos);
 };
 
 
@@ -470,29 +470,22 @@ void vector<T, Allocator>::reserve(vector<T, Allocator>::size_type capacity)
 }
 
 template<class T, class Allocator>
-void vector<T, Allocator>::reserve_for_push()
-{
-    if (capacity_  > size_) {
-        return;
-    }
-    //small kostyl
-    size_type new_capacity;
-    if (capacity_ == 0) {
-        capacity_ = MIN_CAPACITY;
-    } else {
-        new_capacity = static_cast<size_type>(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
-    }
-
-    reserve(new_capacity);
-}
-
-template<class T, class Allocator>
 void vector<T, Allocator>::pop_back()
 {
     if (size_ > 0) {
         --size_;
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + size_);
     }
+}
+
+template<class T, class Allocator>
+template<class... Args>
+typename vector<T, Allocator>::iterator vector<T, Allocator>::emplace(vector::const_iterator position, Args&&... args)
+{
+    shift_right(position);
+    std::allocator_traits<Allocator>::construct(allocator_, data_ + position.pos_, std::forward<Args&&>(args)...);
+    size_++;
+    return iterator(data_, size_, position.pos_);
 }
 
 template<class T, class Allocator>
@@ -514,6 +507,22 @@ void vector<T, Allocator>::copy_from_another_vector(const vector<T>& other)
     }
 }
 
+template<class T, class Allocator>
+void vector<T, Allocator>::reserve_for_push()
+{
+    if (capacity_  > size_) {
+        return;
+    }
+    //small kostyl
+    size_type new_capacity;
+    if (capacity_ == 0) {
+        capacity_ = MIN_CAPACITY;
+    } else {
+        new_capacity = static_cast<size_type>(std::floor(capacity_ * INCREASE_CAPACITY_FACTOR));
+    }
+
+    reserve(new_capacity);
+}
 
 template<class T, class Allocator>
 void vector<T, Allocator>::shrink_to_fit()
@@ -709,5 +718,17 @@ void vector<T, Allocator>::destruct_data(size_type from)
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
 }
+
+template<class T, class Allocator>
+void vector<T, Allocator>::shift_right(vector::const_iterator pos)
+{
+    reserve_for_push();
+    for (auto it = end(); it != pos; it--) {
+        std::allocator_traits<Allocator>::construct(allocator_, &*it, std::move(*(it-1)));
+        std::allocator_traits<Allocator>::destroy(allocator_, &*(it-1));
+    }
+
+}
+
 
 } //namespace atl
