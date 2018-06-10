@@ -277,7 +277,7 @@ vector<T, Allocator>::~vector()
 template<class T, class Allocator>
 void vector<T, Allocator>::initialize_default(size_type from)
 {
-    for (size_type i = from; i < capacity_; i++) {
+    for (size_type i = from; i < size_; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, data_ + i);
     }
 }
@@ -381,8 +381,6 @@ template<class T, class Allocator>
 void vector<T, Allocator>::push_back(const T& elem)
 {
     reserve_for_push();
-    //ASK: whats the point to have default-initialized elements after size_?
-    std::allocator_traits<Allocator>::destroy(allocator_, data_ + size_);
     std::allocator_traits<Allocator>::construct(allocator_, data_ + size_, std::forward<const T&>(elem));
     size_++;
 }
@@ -398,7 +396,7 @@ void vector<T, Allocator>::push_back(T&& elem)
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size)
 {
-    auto new_capacity = std::max(new_size, MIN_CAPACITY);
+    auto needed_capacity = std::max(new_size, MIN_CAPACITY);
 
     if (new_size == size_) {
         return;
@@ -406,34 +404,27 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_s
 
     if (new_size < size_) {
         destruct_data(new_size);
-        initialize_default(new_size);
         size_ = new_size;
         return;
     }
 
-    if (new_capacity > capacity_) {
-        auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
+    if (needed_capacity > capacity_) {
+        auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, needed_capacity);
         move_to_another_ptr(new_data);
 
         std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
         data_= new_data;
-        capacity_ = new_capacity;
+        capacity_ = needed_capacity;
     }
 
     initialize_default(size_);
     size_ = new_size;
-
-//    std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
-//    data_ = new_data;
-//    capacity_ = new_capacity;
-//    initialize_default(size_);
-//    size_ = new_size;
 }
 
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size, const T& elem)
 {
-    auto new_capacity = std::max(new_size, MIN_CAPACITY);
+    auto needed_capacity = std::max(new_size, MIN_CAPACITY);
 
     if (new_size == size_) {
         return;
@@ -441,18 +432,17 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_s
 
     if (new_size < size_) {
         destruct_data(new_size);
-        initialize_default(new_size);
         size_ = new_size;
         return;
     }
 
-    if (new_capacity > capacity_) {
-        auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, new_capacity);
+    if (needed_capacity > capacity_) {
+        auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, needed_capacity);
         move_to_another_ptr(new_data);
 
         std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
         data_= new_data;
-        capacity_ = new_capacity;
+        capacity_ = needed_capacity;
     }
 
 
@@ -508,7 +498,7 @@ void vector<T, Allocator>::pop_back()
 template<class T, class Allocator>
 void vector<T, Allocator>::move_to_another_ptr(vector::pointer new_data)
 {
-    for (size_type i = 0; i < capacity_; i++) {
+    for (size_type i = 0; i < size_; i++) {
         std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
@@ -533,16 +523,7 @@ void vector<T, Allocator>::shrink_to_fit()
     }
 
     auto new_data = std::allocator_traits<Allocator>::allocate(allocator_, size_);
-
-    for (size_type i = 0; i < size_; i++) {
-        std::allocator_traits<Allocator>::construct(allocator_, new_data + i, std::move(data_[i]));
-        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
-    }
-
-    for (size_type i = size_; i < capacity_; i++) {
-        std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
-    }
-
+    move_to_another_ptr(new_data);
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
     data_= new_data;
     capacity_ = size_;
@@ -639,7 +620,7 @@ typename vector<T, Allocator>::const_reverse_iterator vector<T, Allocator>::cren
 template<class T, class Allocator>
 void vector<T, Allocator>::assign(vector::size_type n, const T& elem)
 {
-    clear();
+    destruct_data();
     reserve(n);
 
     for (size_type i = 0; i < n; i++) {
@@ -653,7 +634,7 @@ template<class T, class Allocator>
 template<class InputIterator, class>
 void vector<T, Allocator>::assign(InputIterator first, InputIterator last)
 {
-    clear();
+    destruct_data();
     auto size = static_cast<size_type>(std::distance(first, last));
     reserve(size);
 
@@ -685,7 +666,7 @@ vector<T, Allocator>& vector<T, Allocator>::operator=(const vector<T, Allocator>
     capacity_  = rhs.capacity_;
     size_      = rhs.size_;
 
-    data_ = std::allocator_traits<Allocator>::allocate(allocator_, capacity_);
+    data_ = std::allocator_traits<Allocator>::allocate(allocator_, rhs.capacity());
     copy_from_another_vector(rhs);
 
     return *this;
@@ -708,7 +689,7 @@ vector<T, Allocator>& vector<T, Allocator>::operator=(vector<T, Allocator>&& rhs
 template<class T, class Allocator>
 void vector<T, Allocator>::deallocate_data()
 {
-    for (size_type i = 0; i < capacity_; i++) {
+    for (size_type i = 0; i < size_; i++) {
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
     std::allocator_traits<Allocator>::deallocate(allocator_, data_, capacity_);
@@ -724,7 +705,7 @@ vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> i
 template<class T, class Allocator>
 void vector<T, Allocator>::destruct_data(size_type from)
 {
-    for (size_type i = from; i < capacity_; i++) {
+    for (size_type i = from; i < size_; i++) {
         std::allocator_traits<Allocator>::destroy(allocator_, data_ + i);
     }
 }
