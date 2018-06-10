@@ -19,8 +19,8 @@ public:
 
     VectorIterator() = delete;
     VectorIterator(const VectorIterator& other) : VectorIterator(other.start_ptr_, other.size_, other.pos_) {}
-    //cast
-    explicit operator VectorIterator<T, true>() const;
+    //implicit cast
+    operator VectorIterator<T, true>() const;
     VectorIterator& operator=(const VectorIterator& rhs);
 
     VectorIterator& operator++(); //prefix increment
@@ -81,6 +81,8 @@ private:
     difference_type pos_;
 
     friend vector<T>;
+    //ASK: Почему без этой строки оператор каста не может получить доступ к приватному конструктору?
+    friend VectorIterator<T, !is_const>;
 };
 
 template<class T, bool is_const>
