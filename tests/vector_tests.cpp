@@ -15,7 +15,6 @@ bool is_same(const T& a, const U& s)
             return false;
         }
     }
-
     return true;
 }
 
@@ -394,14 +393,12 @@ TEST_CASE("Modify", "[modify]")
     {
         atl::vector<SomeClass> test_vector;
         std::vector<SomeClass> std_vector;
-        std::initializer_list<SomeClass> ilist;
-        ilist = {'f', 'z', 's', 'q'};
 
         test_vector = {'k', 'l', 'm'};
         std_vector = {'k', 'l', 'm'};
 
-        std_vector.insert(std_vector.begin()+1, ilist);
-        test_vector.insert(test_vector.begin()+1, ilist);
+        std_vector.insert(std_vector.begin()+1, {'f', 'z', 's', 'q'});
+        test_vector.insert(test_vector.begin()+1, {'f', 'z', 's', 'q'});
 
         REQUIRE(is_same(test_vector, std_vector));
     }
@@ -614,4 +611,13 @@ TEST_CASE("Iterators")
             REQUIRE(*it == test_vector[i--]);
         }
     }
+}
+
+TEST_CASE("Sort")
+{
+    std::vector<std::string> std_vector = {"prive", "poka", "kak dela", "mmmm"};
+    atl::vector<std::string> atl_vector = {"prive", "poka", "kak dela", "mmmm"};
+    std::sort(std_vector.begin(), std_vector.end());
+    std::sort(atl_vector.begin(), atl_vector.end());
+    REQUIRE(is_same(atl_vector, std_vector));
 }

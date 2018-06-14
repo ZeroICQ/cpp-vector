@@ -8,7 +8,10 @@ add_executable(vector ${SRC})
 
 target_include_directories(vector INTERFACE .)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(vector PRIVATE -g3 -O0 -coverage)
-    set_target_properties(vector  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")
-endif()
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#    target_compile_options(vector PRIVATE -ggdb -O0 -coverage)
+#    set_target_properties(vector  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")
+#endif()
+
+target_compile_options(vector PRIVATE -ggdb -O0 -coverage)
+set_target_properties(vector  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")

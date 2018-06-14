@@ -81,7 +81,6 @@ private:
     difference_type pos_;
 
     friend vector<T>;
-    //ASK: Почему без этой строки оператор каста не может получить доступ к приватному конструктору?
     friend VectorIterator<T, !is_const>;
 };
 
@@ -107,6 +106,7 @@ template<class T, bool is_const>
 VectorIterator<T, is_const>& VectorIterator<T, is_const>::operator++()
 {
     pos_++;
+
     return *this;
 }
 

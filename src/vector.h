@@ -140,10 +140,8 @@ public:
 
 private:
     static constexpr double     INCREASE_CAPACITY_FACTOR = 1.5;
-    const  size_type            MIN_CAPACITY             = 10;
 
-    //ASK:???
-//    static constexpr size_type  MIN_CAPACITY             = 10;
+    static constexpr size_type MIN_CAPACITY             = 10;
 
     Allocator allocator_;
     pointer data_;
@@ -387,7 +385,7 @@ void vector<T, Allocator>::push_back(T&& elem)
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size)
 {
-    auto needed_capacity = std::max(new_size, MIN_CAPACITY);
+    auto needed_capacity = std::max<size_type>(new_size, MIN_CAPACITY);
 
     if (new_size == size_) {
         return;
@@ -415,7 +413,7 @@ void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_s
 template<class T, class Allocator>
 void vector<T, Allocator>::resize(typename vector<T, Allocator>::size_type new_size, const T& elem)
 {
-    auto needed_capacity = std::max(new_size, MIN_CAPACITY);
+    auto needed_capacity = std::max<size_type>(new_size, MIN_CAPACITY);
 
     if (new_size == size_) {
         return;

@@ -15,10 +15,13 @@ set(TEST_SRC
 
 add_executable(vector_tests ${TEST_SRC})
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(vector_tests PRIVATE -g3 -O0 -coverage)
-    set_target_properties(vector_tests  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")
-endif()
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#    target_compile_options(vector_tests PRIVATE -g3 -O0 -coverage)
+#    set_target_properties(vector_tests  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage")
+#endif()
+
+target_compile_options(vector_tests PRIVATE -g3 -fsanitize=address -O0 -coverage)
+set_target_properties(vector_tests  PROPERTIES LINK_FLAGS "${LINK_FLAGS} -coverage -fsanitize=address")
 
 SETUP_TARGET_FOR_COVERAGE(
         NAME coverage                 # New target name
